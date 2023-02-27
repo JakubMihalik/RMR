@@ -36,20 +36,23 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distLeftWheel += TICK_TO_METER * data->lDelta;
     data->distRightWheel += TICK_TO_METER * data->rDelta;
 
+    // Update rotation
+    data->rotation = robotdata.GyroAngle;
+
     // Calculate total length
-    data->distance = (data->distLeftWheel + data->distRightWheel) / 2;
+    double dLeftDist =  data->lDelta * TICK_TO_METER;
+    double dRightDist = data->rDelta * TICK_TO_METER;
+    data->distance = (dLeftDist + dRightDist) / 2;
 
     // Calculate position X, Y
-    data->posX = data->distance * cos((data->rotation / 100.0) * PI / 180.0) * 100.0;
-    data->posY = data->distance * sin((data->rotation / 100.0) * PI / 180.0) * 100.0;
+    data->posX += data->distance * cos((data->rotation / 100.0) * PI / 180.0) * 100.0;
+    data->posY += data->distance * sin((data->rotation / 100.0) * PI / 180.0) * 100.0;
 
     // Save new wheels encoder values
     data->leftWheelTicks = robotdata.EncoderLeft;
     data->rightWheelTicks = robotdata.EncoderRight;
 
-    // Update rotation
-    data->rotation = robotdata.GyroAngle;
-
+    // Reset flags
     data->rightWheelOverflow = 0;
     data->leftWheelOverflow = 0;
 
