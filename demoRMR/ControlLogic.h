@@ -29,8 +29,10 @@ typedef struct {
     double rotation;
     double posX;
     double posY;
-    int leftWheelRevolution;
-    int rightWheelRevolution;
+    int leftWheelOverflow;
+    int rightWheelOverflow;
+    int rDelta;
+    int lDelta;
 } OdometryData;
 
 class ControlLogic

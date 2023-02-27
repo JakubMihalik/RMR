@@ -121,7 +121,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
     if(datacounter%5)
     {
-        emit uiValuesChanged(odData.leftWheelRevolution, odData.rightWheelRevolution, odData.rotation);
+        emit uiValuesChanged(odData.distLeftWheel, odData.distRightWheel, odData.rotation / 100.f);
     }
     datacounter++;
 
