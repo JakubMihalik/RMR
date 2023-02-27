@@ -37,7 +37,7 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distRightWheel += TICK_TO_METER * data->rDelta;
 
     // Update rotation
-    data->rotation = robotdata.GyroAngle;
+    data->rotation = robotdata.GyroAngle / 100.0;
 
     // Calculate total length
     double dLeftDist =  data->lDelta * TICK_TO_METER;
@@ -45,8 +45,8 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distance = (dLeftDist + dRightDist) / 2;
 
     // Calculate position X, Y
-    data->posX += data->distance * cos((data->rotation / 100.0) * PI / 180.0) * 100.0;
-    data->posY += data->distance * sin((data->rotation / 100.0) * PI / 180.0) * 100.0;
+    data->posX += data->distance * cos(data->rotation * PI / 180.0) * 100.0;
+    data->posY += data->distance * sin(data->rotation * PI / 180.0) * 100.0;
 
     // Save new wheels encoder values
     data->leftWheelTicks = robotdata.EncoderLeft;
@@ -66,7 +66,7 @@ void ControlLogic::forwardMove(Robot* robot, int speed)
 
 void ControlLogic::reverseMove(Robot* robot, int speed)
 {
-    robot->setTranslationSpeed(- speed);
+    robot->setTranslationSpeed(-speed);
 }
 
 void ControlLogic::leftMove(Robot* robot, double speed)
@@ -76,10 +76,24 @@ void ControlLogic::leftMove(Robot* robot, double speed)
 
 void ControlLogic::rightMove(Robot* robot, double speed)
 {
-    robot->setRotationSpeed(- speed);
+    robot->setRotationSpeed(-speed);
 }
 
 void ControlLogic::autonomousRide(Robot* robot, OdometryData data)
 {
-
+    if (data.posX > -2.5)
+    {
+        reverseMove(robot, 100);
+        return;
+    }
+    if (data.rotation < 90)
+    {
+        leftMove(robot, PI / 4);
+        return;
+    }
+    if (data.posY < 333)
+    {
+        forwardMove(robot, 250);
+        return;
+    }
 }

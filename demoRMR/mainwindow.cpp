@@ -118,10 +118,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
     control->readOdometry(robotdata, &odData);
     // TODO: Resolve encoder overflow
+    control->autonomousRide(&robot, odData);
 
     if(datacounter%5)
     {
-        emit uiValuesChanged(odData.posX, odData.posY, odData.rotation / 100.f);
+        emit uiValuesChanged(odData.posX, odData.posY, odData.rotation);
     }
     datacounter++;
 
