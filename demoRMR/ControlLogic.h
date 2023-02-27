@@ -29,6 +29,7 @@ typedef struct {
     double rotation;
     double posX;
     double posY;
+    double distance;
     int leftWheelOverflow;
     int rightWheelOverflow;
     int rDelta;
