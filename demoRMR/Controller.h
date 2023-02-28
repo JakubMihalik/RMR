@@ -6,12 +6,13 @@
 /** Dependant includes **/
 #include "robot.h"
 #include "ControlLogic.h"
+#include <cmath>
 
 class Controller
 {
 public:
     Controller(Robot*, OdometryData*);
-    Controller(Robot*, OdometryData*, double, double, double);
+    Controller(Robot*, OdometryData*, double desiredX, double desiredY, double Kp, double Ki, double Kd);
     ~Controller();
 
 private:
@@ -20,6 +21,8 @@ private:
     double Kd;
     Robot* robot;
     OdometryData* odData;
+    double desiredX;
+    double desiredY;
 
 /** Public variables and structures **/
 public:
@@ -27,6 +30,7 @@ public:
     {
         double x;
         double y;
+        double theta;
     } ErrorValue;
 
 /** Public methods **/

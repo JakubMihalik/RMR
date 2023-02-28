@@ -1,11 +1,15 @@
 #include "mainwindow.h"
 #include "ControlLogic.h"
+#include "Controller.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
 
+/** Custom variables -> move to interface later **/
+
 ControlLogic* control = new ControlLogic();
 OdometryData odData = {0};
+Controller* controller;
 bool initialStart = true;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     datacounter=0;
 
+    // Construtror objects
+    controller = new Controller(&robot, &odData, -2, 330, 1, 0, 0);
 
 }
 
@@ -119,6 +125,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     control->readOdometry(robotdata, &odData);
     // TODO: Resolve encoder overflow
     control->autonomousRide(&robot, odData);
+    Controller::ErrorValue ev = controller->calculateErrors();
+
+    std::cout << "Error x: " << ev.x << std::endl;
+    std::cout << "Error y: " << ev.y << std::endl;
+    std::cout << "Error theta: " << ev.theta << std::endl;
 
     if(datacounter%5)
     {
