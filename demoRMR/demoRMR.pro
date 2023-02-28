@@ -59,9 +59,11 @@ win32 {
 
 SOURCES += main.cpp\
         ControlLogic.cpp \
+        Controller.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    ControlLogic.h
+    ControlLogic.h \
+    Controller.h
 
 FORMS    += mainwindow.ui
