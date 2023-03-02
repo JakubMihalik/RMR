@@ -34,3 +34,17 @@ Controller::ErrorValue Controller::calculateErrors()
     Controller::ErrorValue e = {eX, eY, eTheta};
     return e;
 }
+
+/** Getters and Setters  **/
+void Controller::setDesiredPosition(double x, double y)
+{
+    this->desiredX = x;
+    this->desiredY = y;
+}
+
+void Controller::setGains(double Kp, double Ki, double Kd)
+{
+    this->Kp = Kp;
+    this->Ki = Ki;
+    this->Kd = Kd;
+}

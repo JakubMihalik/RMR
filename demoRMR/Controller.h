@@ -37,6 +37,9 @@ public:
 public:
     ErrorValue calculateErrors();
     void setRegulation();
+
+    void setDesiredPosition(double x, double y);
+    void setGains(double Kp, double Ki, double Kd);
 };
 
 #endif // CONTROLLER_H
