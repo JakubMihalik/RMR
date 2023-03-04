@@ -12,7 +12,7 @@ class Controller
 {
 public:
     Controller(Robot*, OdometryData*);
-    Controller(Robot*, OdometryData*, double desiredX, double desiredY, double Kp, double Ki, double Kd);
+    Controller(Robot*, OdometryData*, double desiredX, double desiredY, double Kp, double Ki, double Kd, double offset);
     ~Controller();
 
 private:
@@ -23,6 +23,7 @@ private:
     OdometryData* odData;
     double desiredX;
     double desiredY;
+    double offset;
 
 /** Public variables and structures **/
 public:
@@ -36,10 +37,11 @@ public:
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    void setRegulation();
+    void regulate();
 
     void setDesiredPosition(double x, double y);
     void setGains(double Kp, double Ki, double Kd);
+    void setOffset(double offset);
 };
 
 #endif // CONTROLLER_H

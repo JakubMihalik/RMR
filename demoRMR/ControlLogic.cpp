@@ -28,6 +28,7 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
         data->rightWheelOverflow++;
     if (data->rightWheelTicks < 300 && robotdata.EncoderRight > 65200)
         data->rightWheelOverflow--;
+    // TODO: Vyriesit pretecenie gyroskopu
 
     data->lDelta = (65535 * data->leftWheelOverflow) + robotdata.EncoderLeft - data->leftWheelTicks;
     data->rDelta = (65535 * data->rightWheelOverflow) + robotdata.EncoderRight - data->rightWheelTicks;

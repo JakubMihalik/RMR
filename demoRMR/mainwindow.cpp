@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -2, 330, 1, 0, 0);
+    controller = new Controller(&robot, &odData, -2, 330, 1, 0, 0, 1.5);
 
 }
 
@@ -130,6 +130,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;
+
+    controller->regulate();
 
     if(datacounter%5)
     {

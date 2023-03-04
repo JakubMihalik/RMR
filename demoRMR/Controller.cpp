@@ -9,7 +9,7 @@ Controller::Controller(Robot* robot, OdometryData* odData)
     this->Kd = 0;
 }
 
-Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY, double Kp, double Ki, double Kd)
+Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY, double Kp, double Ki, double Kd, double offset)
 {
     this->robot = robot;
     this->odData = odData;
@@ -18,11 +18,27 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->Kp = Kp;
     this->Ki = Ki;
     this->Kd = Kd;
+    this->offset = offset;
 }
 
 Controller::~Controller()
 {
     delete this->robot;
+}
+
+void Controller::regulate()
+{
+    // Calculate regulation error
+    Controller::ErrorValue error = Controller::calculateErrors();
+    // Check desired heading angle
+    double headingAngle = atan2(this->desiredY - this->odData->posY,
+                                this->desiredX - this->odData->posX);
+    std::cout << "Heading angle = " << headingAngle * (180 / PI) << std::endl;
+    // Check current angle
+
+    // If heading angle is greater then specified offset start rotating toward desired angle
+
+    // Else move forward
 }
 
 Controller::ErrorValue Controller::calculateErrors()
@@ -47,4 +63,9 @@ void Controller::setGains(double Kp, double Ki, double Kd)
     this->Kp = Kp;
     this->Ki = Ki;
     this->Kd = Kd;
+}
+
+void Controller::setOffset(double offset)
+{
+    this->offset =  offset;
 }
