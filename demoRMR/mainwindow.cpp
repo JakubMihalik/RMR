@@ -5,12 +5,16 @@
 #include <QPainter>
 #include <math.h>
 
+#include <fstream>
+
 /** Custom variables -> move to interface later **/
 
 ControlLogic* control = new ControlLogic();
 OdometryData odData = {0};
 Controller* controller;
 bool initialStart = true;
+
+ofstream lidar;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,14 +37,23 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -2, 330, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, -2, 100, 1, 0, 0, 1.5);
+    lidar.open("C:\\Users\\jakub\\Desktop\\lidar.txt");
 
+    if (!lidar)
+    {
+        std::cout << "Cannot open file" << std::endl;
+        return;
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete control;
+    lidar.close();
+
+    std::cout << "System closed - lidat file closed";
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -127,11 +140,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     control->autonomousRide(&robot, odData);
     Controller::ErrorValue ev = controller->calculateErrors();
 
-    std::cout << "Error x: " << ev.x << std::endl;
-    std::cout << "Error y: " << ev.y << std::endl;
-    std::cout << "Error theta: " << ev.theta << std::endl;
+//    std::cout << "Error x: " << ev.x << std::endl;
+//    std::cout << "Error y: " << ev.y << std::endl;
+//    std::cout << "Error theta: " << ev.theta << std::endl;
 
-    controller->regulate();
+//    controller->regulate();
 
     if(datacounter%5)
     {
@@ -147,12 +160,20 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
 
 
-    memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
+    memcpy(&copyOfLaserData, &laserData, sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
     updateLaserPicture=1;
     update();//tento prikaz prinuti prekreslit obrazovku.. zavola sa paintEvent funkcia
 
+    lidar << "Number of scans: " << copyOfLaserData.numberOfScans << "\n";
+    for (int i{0}; i < copyOfLaserData.numberOfScans; i++)
+    {
+        lidar << "Data angle: " << copyOfLaserData.Data[i].scanAngle << "\n";
+        lidar << "Data quality: " << copyOfLaserData.Data[i].scanQuality << "\n";
+        lidar << "Data distance: " << copyOfLaserData.Data[i].scanDistance << "\n\n";
+    }
+    lidar << "\n***************************************************************************************\n";
     return 0;
 
 }
