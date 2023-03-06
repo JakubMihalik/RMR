@@ -37,15 +37,14 @@ public:
     typedef struct
     {
         double forwardSpeed;
-        double arcSpeed;
-        double radius;
         double rotationSpeed;
-    } ControllOutput;
+        double reached;
+    } ControllerOutput;
 
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    ControllOutput regulate();
+    ControllerOutput regulate();
 
     void setDesiredPosition(double x, double y);
     void setGains(double Kp, double Ki, double Kd);

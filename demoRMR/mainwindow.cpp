@@ -93,6 +93,7 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
      ui->lineEdit_4->setText(QString::number(robotFi));
 }
 
+int step = 0;
 
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
@@ -129,29 +130,18 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
     // TODO: Resolve encoder overflow
 //    control->autonomousRide(&robot, odData);
-    Controller::ControllOutput output = controller->regulate();
+    Controller::ControllerOutput output = controller->regulate();
     Controller::ErrorValue ev = controller->calculateErrors();
-    int x[4] = {0, 20, 0 , 30};
-    int y[4] = {0, 180, 180 , 0};
-    int step = 0;
+    int x[4] = {0, 1, 0 , 0};
+    int y[4] = {0, 3, 0 , 0};
     std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;
     std::cout << "Robot theta: " << odData.rotation << std::endl;
+    std::cout << "Rotational speed: " << output.rotationSpeed << std::endl;
+    std::cout << "Speed: " << output.forwardSpeed << std::endl;
 
-    robot.setArcSpeed(10, 1);
-
-//    if (ev.theta < -0.01 || ev.theta > 0.01) {
-//            robot.setRotationSpeed(3 * ev.theta);
-//    } else if (ev.x < -1 || ev.x > 1 || ev.y < -1 || ev.y > 1) {
-//        robot.setTranslationSpeed(10 * output.forwardSpeed);
-//    }  else {
-//        robot.setRotationSpeed(0);
-//        robot.setTranslationSpeed(0);
-//        step+=1;
-//        std::cout << "Step: " << step << std::endl;
-//        controller->setDesiredPosition(x[step], y[step]);
-//    }
+//    robot.setArcSpeed(output.forwardSpeed, output.radius*1000);
 
     if(datacounter%5)
     {
