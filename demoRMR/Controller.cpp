@@ -41,26 +41,32 @@ Controller::ControllerOutput Controller::regulate()
     controllerOutput.reached = 0;
 
     if (ev.theta < -0.01 || ev.theta > 0.01) {
-        controllerOutput.rotationSpeed = 5 * ev.theta;
+        controllerOutput.rotationSpeed = 10 * ev.theta;
         if (controllerOutput.rotationSpeed > PI/3.0)
         {
             controllerOutput.rotationSpeed = PI/3.0;
         }
-        robot->setRotationSpeed(controllerOutput.rotationSpeed);
-    } else if (ev.x < -0.1 || ev.x > 0.1 || ev.y < -0.1 || ev.y > 0.1) {
+//        robot->setRotationSpeed(controllerOutput.rotationSpeed);
+    }
+    if (ev.x < -0.1 || ev.x > 0.1 || ev.y < -0.1 || ev.y > 0.1) {
         controllerOutput.forwardSpeed = 100 * sqrt(ev.x*ev.x + ev.y*ev.y);
         if (controllerOutput.forwardSpeed > 400)
         {
             controllerOutput.forwardSpeed = 400;
         }
 
-        robot->setTranslationSpeed(controllerOutput.forwardSpeed);
+//        robot->setTranslationSpeed(controllerOutput.forwardSpeed);
     }  else {
         controllerOutput.reached = 1;
         robot->setRotationSpeed(controllerOutput.rotationSpeed);
         robot->setRotationSpeed(controllerOutput.forwardSpeed);
     }
 
+    if (controllerOutput.rotationSpeed > 0.1) {
+        robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed / controllerOutput.rotationSpeed);
+    } else if (controllerOutput.forwardSpeed > 0.1) {
+        robot->setArcSpeed(controllerOutput.forwardSpeed, 32768);
+    }
 
 
 

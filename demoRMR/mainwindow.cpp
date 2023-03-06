@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, 20, 190, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 1, 1, 1, 0, 0, 1.5);
 
 }
 
@@ -133,8 +133,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 //    control->autonomousRide(&robot, odData);
     Controller::ControllerOutput output = controller->regulate();
     Controller::ErrorValue ev = controller->calculateErrors();
-    int x[4] = {0, 1, 0 , 0};
-    int y[4] = {0, 3, 0 , 0};
+//    int x[4] = {0, 1, 0 , 0};
+//    int y[4] = {0, 3, 0 , 0};
     std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;

@@ -47,8 +47,8 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2*0.23);
 
     // Calculate global position X, Y
-    data->posX += data->distance * cos(data->rotation * PI / 180.0) * 100.0;
-    data->posY += data->distance * sin(data->rotation * PI / 180.0) * 100.0;
+    data->posX += data->distance * cos(data->rotation * PI / 180.0);// * 100.0;
+    data->posY += data->distance * sin(data->rotation * PI / 180.0);// * 100.0;
 //    data->rotation += data->deltaTheta;
 
     // Save new wheels encoder values
