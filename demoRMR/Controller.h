@@ -34,10 +34,18 @@ public:
         double theta;
     } ErrorValue;
 
+    typedef struct
+    {
+        double forwardSpeed;
+        double arcSpeed;
+        double radius;
+        double rotationSpeed;
+    } ControllOutput;
+
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    void regulate();
+    ControllOutput regulate();
 
     void setDesiredPosition(double x, double y);
     void setGains(double Kp, double Ki, double Kd);

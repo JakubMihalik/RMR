@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -2, 330, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 20, 190, 1, 0, 0, 1.5);
 
 }
 
@@ -113,25 +113,45 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         return 0;
     }
 
-    if(forwardspeed==0 && rotationspeed!=0)
-        robot.setRotationSpeed(rotationspeed);
-    else if(forwardspeed!=0 && rotationspeed==0)
-        robot.setTranslationSpeed(forwardspeed);
-    else if((forwardspeed!=0 && rotationspeed!=0))
-        robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-    else
-        robot.setTranslationSpeed(0);
+//    controller.
+
+//    if(forwardspeed==0 && rotationspeed!=0)
+//        robot.setRotationSpeed(rotationspeed);
+//    else if(forwardspeed!=0 && rotationspeed==0)
+//        robot.setTranslationSpeed(forwardspeed);
+//    else if((forwardspeed!=0 && rotationspeed!=0))
+//        robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
+//    else
+//        robot.setTranslationSpeed(0);
+
 
     control->readOdometry(robotdata, &odData);
-    // TODO: Resolve encoder overflow
-    control->autonomousRide(&robot, odData);
-    Controller::ErrorValue ev = controller->calculateErrors();
 
+    // TODO: Resolve encoder overflow
+//    control->autonomousRide(&robot, odData);
+    Controller::ControllOutput output = controller->regulate();
+    Controller::ErrorValue ev = controller->calculateErrors();
+    int x[4] = {0, 20, 0 , 30};
+    int y[4] = {0, 180, 180 , 0};
+    int step = 0;
     std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;
+    std::cout << "Robot theta: " << odData.rotation << std::endl;
 
-    controller->regulate();
+    robot.setArcSpeed(10, 1);
+
+//    if (ev.theta < -0.01 || ev.theta > 0.01) {
+//            robot.setRotationSpeed(3 * ev.theta);
+//    } else if (ev.x < -1 || ev.x > 1 || ev.y < -1 || ev.y > 1) {
+//        robot.setTranslationSpeed(10 * output.forwardSpeed);
+//    }  else {
+//        robot.setRotationSpeed(0);
+//        robot.setTranslationSpeed(0);
+//        step+=1;
+//        std::cout << "Step: " << step << std::endl;
+//        controller->setDesiredPosition(x[step], y[step]);
+//    }
 
     if(datacounter%5)
     {

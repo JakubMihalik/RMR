@@ -30,6 +30,7 @@ typedef struct {
     double posX;
     double posY;
     double distance;
+    double deltaTheta;
     int leftWheelOverflow;
     int rightWheelOverflow;
     int rDelta;

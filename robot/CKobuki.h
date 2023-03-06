@@ -12,7 +12,7 @@
 ////*************************************************************************************
 #ifndef KOBUKI_CLASS_123456789
 #define KOBUKI_CLASS_123456789
-#define PI          3.14159 /* pi */
+#define PI 3.14159 /* pi */
 #define MS_INSTRUCTION_DELAY 25
 
 #include <stdio.h>

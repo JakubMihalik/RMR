@@ -44,10 +44,12 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     double dLeftDist =  data->lDelta * TICK_TO_METER;
     double dRightDist = data->rDelta * TICK_TO_METER;
     data->distance = (dLeftDist + dRightDist) / 2;
+    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2*0.23);
 
-    // Calculate position X, Y
+    // Calculate global position X, Y
     data->posX += data->distance * cos(data->rotation * PI / 180.0) * 100.0;
     data->posY += data->distance * sin(data->rotation * PI / 180.0) * 100.0;
+//    data->rotation += data->deltaTheta;
 
     // Save new wheels encoder values
     data->leftWheelTicks = robotdata.EncoderLeft;
@@ -56,6 +58,7 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     // Reset flags
     data->rightWheelOverflow = 0;
     data->leftWheelOverflow = 0;
+
 
     return *data;
 }
