@@ -26,6 +26,8 @@ Controller::~Controller()
     delete this->robot;
 }
 
+double currentRamp = 1;
+
 Controller::ControllerOutput Controller::regulate()
 {
     // Calculate regulation error
@@ -36,37 +38,39 @@ Controller::ControllerOutput Controller::regulate()
     double headingAngle = atan2(this->desiredY - this->odData->posY,
                                 this->desiredX - this->odData->posX);
 //    headingAngle = headingAngle * (180 / PI);
-
     std::cout << "Heading angle = " << headingAngle << std::endl;
     controllerOutput.reached = 0;
 
-    if (ev.theta < -0.01 || ev.theta > 0.01) {
-        controllerOutput.rotationSpeed = 10 * ev.theta;
+    if (abs(ev.theta) > 1*PI/180) {
+        controllerOutput.rotationSpeed = 200 * ev.theta;
         if (controllerOutput.rotationSpeed > PI/3.0)
         {
             controllerOutput.rotationSpeed = PI/3.0;
         }
-//        robot->setRotationSpeed(controllerOutput.rotationSpeed);
+    } else {
+        controllerOutput.rotationSpeed = 32576;
     }
-    if (ev.x < -0.1 || ev.x > 0.1 || ev.y < -0.1 || ev.y > 0.1) {
-        controllerOutput.forwardSpeed = 100 * sqrt(ev.x*ev.x + ev.y*ev.y);
-        if (controllerOutput.forwardSpeed > 400)
-        {
-            controllerOutput.forwardSpeed = 400;
-        }
-
-//        robot->setTranslationSpeed(controllerOutput.forwardSpeed);
+    if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01) {
+//        if (controllerOutput.forwardSpeed > sqrt(ev.x*ev.x + ev.y*ev.y)/1000) {
+//            controllerOutput.forwardSpeed -= 40;
+//        } else {
+//            controllerOutput.forwardSpeed += 20;
+//        }
+        controllerOutput.forwardSpeed += 400; // currentRamp * sqrt(ev.x*ev.x + ev.y*ev.y);
+//        if (controllerOutput.forwardSpeed > 400)
+//        {
+//            controllerOutput.forwardSpeed = 400;
+//        }
     }  else {
         controllerOutput.reached = 1;
-        robot->setRotationSpeed(controllerOutput.rotationSpeed);
-        robot->setRotationSpeed(controllerOutput.forwardSpeed);
+        robot->setRotationSpeed(0);
+        robot->setTranslationSpeed(0);
     }
 
-    if (controllerOutput.rotationSpeed > 0.1) {
-        robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed / controllerOutput.rotationSpeed);
-    } else if (controllerOutput.forwardSpeed > 0.1) {
-        robot->setArcSpeed(controllerOutput.forwardSpeed, 32768);
-    }
+    std::cout << "FWS = " << controllerOutput.forwardSpeed << std::endl;
+    std::cout << "RTS = " << controllerOutput.rotationSpeed << std::endl;
+
+    robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed / controllerOutput.rotationSpeed);
 
 
 
