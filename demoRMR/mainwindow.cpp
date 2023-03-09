@@ -17,24 +17,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-    //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-//    ipaddress="127.0.0.1";
-    ipaddress = "192.168.1.14";
-  //  cap.open("http://192.168.1.11:8000/stream.mjpg");
+   // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
+
+    ipaddress="127.0.0.1";
+//    ipaddress = "192.168.1.14";
+//    cap.open("http://192.168.1.11:8000/stream.mjpg");
+
     ui->setupUi(this);
     datacounter=0;
-  //  timer = new QTimer(this);
+
+//    timer = new QTimer(this);
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
+
     actIndex=-1;
     useCamera1=false;
-
-
-
-
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, 0.5, 0.5, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, -0.15, 3.0, 1, 0, 0, 1.5);
 
 }
 
@@ -115,34 +115,19 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         return 0;
     }
 
-//    controller.
-
-//    if(forwardspeed==0 && rotationspeed!=0)
-//        robot.setRotationSpeed(rotationspeed);
-//    else if(forwardspeed!=0 && rotationspeed==0)
-//        robot.setTranslationSpeed(forwardspeed);
-//    else if((forwardspeed!=0 && rotationspeed!=0))
-//        robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-//    else
-//        robot.setTranslationSpeed(0);
-
-
     control->readOdometry(robotdata, &odData);
 
     // TODO: Resolve encoder overflow
-//    control->autonomousRide(&robot, odData);
+
     Controller::ControllerOutput output = controller->regulate();
     Controller::ErrorValue ev = controller->calculateErrors();
-//    int x[4] = {0, 1, 0 , 0};
-//    int y[4] = {0, 3, 0 , 0};
+
     std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;
     std::cout << "Robot theta: " << odData.rotation << std::endl;
     std::cout << "Rotational speed: " << output.rotationSpeed << std::endl;
     std::cout << "Speed: " << output.forwardSpeed << std::endl;
-
-//    robot.setArcSpeed(output.forwardSpeed, output.radius*1000);
 
     if(datacounter%5)
     {
@@ -188,8 +173,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 

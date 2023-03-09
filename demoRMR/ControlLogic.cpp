@@ -17,7 +17,8 @@ void ControlLogic::initControl()
 
 OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data)
 {
-    /******** Detect overflow ********/
+    /******** [B] - Detect overflow ********/
+
     // Left Wheel
     if (data->leftWheelTicks > 65200 && robotdata.EncoderLeft < 300)
         data->leftWheelOverflow++;
@@ -28,6 +29,9 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
         data->rightWheelOverflow++;
     if (data->rightWheelTicks < 300 && robotdata.EncoderRight > 65200)
         data->rightWheelOverflow--;
+
+    /******** [E] - Detect overflow ********/
+
     // TODO: Vyriesit pretecenie gyroskopu
 
     data->lDelta = (65535 * data->leftWheelOverflow) + robotdata.EncoderLeft - data->leftWheelTicks;
@@ -49,7 +53,6 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     // Calculate global position X, Y
     data->posX += data->distance * cos(data->rotation * PI / 180.0);
     data->posY += data->distance * sin(data->rotation * PI / 180.0);
-//    data->rotation += data->deltaTheta;
 
     // Save new wheels encoder values
     data->leftWheelTicks = robotdata.EncoderLeft;

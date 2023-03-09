@@ -37,31 +37,28 @@ Controller::ControllerOutput Controller::regulate()
     // Check desired heading angle
     double headingAngle = atan2(this->desiredY - this->odData->posY,
                                 this->desiredX - this->odData->posX);
-//    headingAngle = headingAngle * (180 / PI);
     std::cout << "Heading angle = " << headingAngle << std::endl;
+
     controllerOutput.reached = 0;
 
-    if (abs(ev.theta) > 1*PI/180) {
+    if (abs(ev.theta) > 1 * PI / 180)
+    {
         controllerOutput.rotationSpeed = 200 * ev.theta;
-        if (controllerOutput.rotationSpeed > PI/3.0)
+        if (controllerOutput.rotationSpeed > PI / 3.0)
         {
-            controllerOutput.rotationSpeed = PI/3.0;
+            controllerOutput.rotationSpeed = PI / 3.0;
         }
-    } else {
+    }
+    else
+    {
         controllerOutput.rotationSpeed = 32576;
     }
-    if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01) {
-//        if (controllerOutput.forwardSpeed > sqrt(ev.x*ev.x + ev.y*ev.y)/1000) {
-//            controllerOutput.forwardSpeed -= 40;
-//        } else {
-//            controllerOutput.forwardSpeed += 20;
-//        }
+    if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01)
+    {
         controllerOutput.forwardSpeed += 400; // currentRamp * sqrt(ev.x*ev.x + ev.y*ev.y);
-//        if (controllerOutput.forwardSpeed > 400)
-//        {
-//            controllerOutput.forwardSpeed = 400;
-//        }
-    }  else {
+    }
+    else
+    {
         controllerOutput.reached = 1;
         robot->setRotationSpeed(0);
         robot->setTranslationSpeed(0);
@@ -71,14 +68,6 @@ Controller::ControllerOutput Controller::regulate()
     std::cout << "RTS = " << controllerOutput.rotationSpeed << std::endl;
 
     robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed / controllerOutput.rotationSpeed);
-
-
-
-//    double rotation = 0.1 * headingAngle;
-//    double distError = sqrt(error.x*error.x + error.y*error.y);
-//    double forwardSpeed = distError;
-//    double radius = 2 * 0.23 * sin(error.theta) / error.theta;
-//    double arcSpeed = forwardSpeed/radius;
 
     return controllerOutput;
 }
