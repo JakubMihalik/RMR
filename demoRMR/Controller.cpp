@@ -41,7 +41,7 @@ Controller::ControllerOutput Controller::regulate()
 
     controllerOutput.reached = 0;
 
-    if (abs(ev.theta) > 1 * PI / 180)
+    if (abs(ev.theta) > deg2rad(5.0))
     {
         controllerOutput.rotationSpeed = 200 * ev.theta;
         if (controllerOutput.rotationSpeed > PI / 3.0)
@@ -51,7 +51,12 @@ Controller::ControllerOutput Controller::regulate()
     }
     else
     {
-        controllerOutput.rotationSpeed = 32576;
+        controllerOutput.rotationSpeed -= PI / 9.0;
+        if (controllerOutput.rotationSpeed < 0.01)
+        {
+            controllerOutput.rotationSpeed = 32768;
+        }
+//        controllerOutput.rotationSpeed = 32576;
     }
     if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01)
     {

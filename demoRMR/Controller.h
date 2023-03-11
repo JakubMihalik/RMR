@@ -8,6 +8,8 @@
 #include "ControlLogic.h"
 #include <cmath>
 
+#define deg2rad(d) ((d * 3.1415926536) / 180.0)
+
 class Controller
 {
 public:
