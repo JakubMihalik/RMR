@@ -32,7 +32,7 @@ Controller::ControllerOutput Controller::regulate()
 {
     // Calculate regulation error
     Controller::ErrorValue ev = Controller::calculateErrors();
-    Controller::ControllerOutput controllerOutput;
+    static Controller::ControllerOutput controllerOutput;
 
     // Check desired heading angle
     double headingAngle = atan2(this->desiredY - this->odData->posY,
@@ -41,17 +41,14 @@ Controller::ControllerOutput Controller::regulate()
 
     controllerOutput.reached = 0;
 
-    if (abs(ev.theta) > deg2rad(5.0))
+    if (abs(ev.theta) > deg2rad(0.5))
     {
-        controllerOutput.rotationSpeed = 200 * ev.theta;
-        if (controllerOutput.rotationSpeed > PI / 3.0)
-        {
-            controllerOutput.rotationSpeed = PI / 3.0;
-        }
+        controllerOutput.rotationSpeed += 2 * ev.theta;
+        controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, PI / 3.0);
     }
     else
     {
-        controllerOutput.rotationSpeed -= PI / 9.0;
+        controllerOutput.rotationSpeed -= PI / 36.0;
         if (controllerOutput.rotationSpeed < 0.01)
         {
             controllerOutput.rotationSpeed = 32768;
@@ -60,13 +57,17 @@ Controller::ControllerOutput Controller::regulate()
     }
     if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01)
     {
-        controllerOutput.forwardSpeed += 400; // currentRamp * sqrt(ev.x*ev.x + ev.y*ev.y);
+        controllerOutput.forwardSpeed += 5; // currentRamp * sqrt(ev.x*ev.x + ev.y*ev.y);
+        controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
     }
     else
     {
         controllerOutput.reached = 1;
         robot->setRotationSpeed(0);
         robot->setTranslationSpeed(0);
+
+        controllerOutput.forwardSpeed = 0;
+        controllerOutput.rotationSpeed = 0;
     }
 
     std::cout << "FWS = " << controllerOutput.forwardSpeed << std::endl;

@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -0.15, 3.0, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, -0.15, 2.5, 1, 0, 0, 1.5);
 
 }
 
@@ -122,12 +122,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     Controller::ControllerOutput output = controller->regulate();
     Controller::ErrorValue ev = controller->calculateErrors();
 
-    std::cout << "Error x: " << ev.x << std::endl;
+    /*std::cout << "Error x: " << ev.x << std::endl;
     std::cout << "Error y: " << ev.y << std::endl;
     std::cout << "Error theta: " << ev.theta << std::endl;
     std::cout << "Robot theta: " << odData.rotation << std::endl;
     std::cout << "Rotational speed: " << output.rotationSpeed << std::endl;
-    std::cout << "Speed: " << output.forwardSpeed << std::endl;
+    std::cout << "Speed: " << output.forwardSpeed << std::endl;*/
 
     if(datacounter%5)
     {
@@ -173,8 +173,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 
