@@ -42,7 +42,11 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distRightWheel += TICK_TO_METER * data->rDelta;
 
     // Update rotation
-    data->rotation = robotdata.GyroAngle / 100.0;
+    if (robotdata.GyroAngle < 0) {
+        data->rotation = 360 + robotdata.GyroAngle / 100.0;
+    } else {
+        data->rotation = robotdata.GyroAngle / 100.0;
+    }
 
     // Calculate total length
     double dLeftDist =  data->lDelta * TICK_TO_METER;

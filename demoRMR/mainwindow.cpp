@@ -122,13 +122,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     Controller::ControllerOutput output = controller->regulate();
     Controller::ErrorValue ev = controller->calculateErrors();
 
-    /*std::cout << "Error x: " << ev.x << std::endl;
-    std::cout << "Error y: " << ev.y << std::endl;
-    std::cout << "Error theta: " << ev.theta << std::endl;
-    std::cout << "Robot theta: " << odData.rotation << std::endl;
-    std::cout << "Rotational speed: " << output.rotationSpeed << std::endl;
-    std::cout << "Speed: " << output.forwardSpeed << std::endl;*/
-
     if(datacounter%5)
     {
         emit uiValuesChanged(odData.posX, odData.posY, odData.rotation);

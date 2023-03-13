@@ -44,11 +44,11 @@ Controller::ControllerOutput Controller::regulate()
     if (abs(ev.theta) > deg2rad(0.5))
     {
         controllerOutput.rotationSpeed += 2 * ev.theta;
-        controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, PI / 3.0);
+        controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3.0), -PI / 3.0);
     }
     else
     {
-        controllerOutput.rotationSpeed -= PI / 36.0;
+        controllerOutput.rotationSpeed = 0;
         if (controllerOutput.rotationSpeed < 0.01)
         {
             controllerOutput.rotationSpeed = 32768;
