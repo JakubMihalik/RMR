@@ -42,6 +42,25 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distRightWheel += TICK_TO_METER * data->rDelta;
 
     // Update rotation
+//    data->rotation = robotdata.GyroAngle / 100.0;
+    if (data->initRotation < 0)
+    {
+        if (robotdata.GyroAngle < 0) {
+            data->rotation = data->initRotation + 360 + robotdata.GyroAngle / 100.0;
+        } else {
+            data->rotation = data->initRotation + robotdata.GyroAngle / 100.0;
+        }
+//        data->rotation = data->initRotation + (robotdata.GyroAngle / 100.0);
+    }
+    else
+    {
+        if (robotdata.GyroAngle < 0) {
+            data->rotation = data->initRotation - 360 + robotdata.GyroAngle / 100.0;
+        } else {
+            data->rotation = data->initRotation - robotdata.GyroAngle / 100.0;
+        }
+    }
+
     if (robotdata.GyroAngle < 0) {
         data->rotation = 360 + robotdata.GyroAngle / 100.0;
     } else {

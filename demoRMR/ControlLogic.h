@@ -36,6 +36,7 @@ typedef struct {
     int rDelta;
     int lDelta;
     double forwardSpeed;
+    double initRotation;
 } OdometryData;
 
 class ControlLogic

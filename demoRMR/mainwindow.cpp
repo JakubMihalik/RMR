@@ -19,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-    ipaddress="127.0.0.1";
-//    ipaddress = "192.168.1.14";
+//    ipaddress="127.0.0.1";
+    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -0.15, 2.5, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 0.5, 0.5, 1, 0, 0, 1.5);
 
 }
 
@@ -107,7 +107,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         odData.rightWheelTicks = robotdata.EncoderRight;
         odData.posX = 0;
         odData.posY = 0;
-        odData.rotation = robotdata.GyroAngle;
+        odData.initRotation = robotdata.GyroAngle / 100.0;
 
         emit uiValuesChanged(0, 0, odData.rotation);
 

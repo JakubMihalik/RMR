@@ -34,27 +34,9 @@ Controller::ControllerOutput Controller::regulate()
     Controller::ErrorValue ev = Controller::calculateErrors();
     static Controller::ControllerOutput controllerOutput;
 
-    // Check desired heading angle
-    double headingAngle = atan2(this->desiredY - this->odData->posY,
-                                this->desiredX - this->odData->posX);
-    std::cout << "Heading angle = " << headingAngle << std::endl;
-
     controllerOutput.reached = 0;
+    double radius = 0;
 
-    if (abs(ev.theta) > deg2rad(0.5))
-    {
-        controllerOutput.rotationSpeed += 2 * ev.theta;
-        controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3.0), -PI / 3.0);
-    }
-    else
-    {
-        controllerOutput.rotationSpeed = 0;
-        if (controllerOutput.rotationSpeed < 0.01)
-        {
-            controllerOutput.rotationSpeed = 32768;
-        }
-//        controllerOutput.rotationSpeed = 32576;
-    }
     if (abs(ev.x) > 0.01 || abs(ev.y) > 0.01)
     {
         controllerOutput.forwardSpeed += 5; // currentRamp * sqrt(ev.x*ev.x + ev.y*ev.y);
@@ -63,17 +45,35 @@ Controller::ControllerOutput Controller::regulate()
     else
     {
         controllerOutput.reached = 1;
-        robot->setRotationSpeed(0);
+
         robot->setTranslationSpeed(0);
 
         controllerOutput.forwardSpeed = 0;
         controllerOutput.rotationSpeed = 0;
+        return controllerOutput;
+    }
+
+    if (abs(ev.theta) > deg2rad(0.01))
+    {
+        controllerOutput.rotationSpeed = 2 * ev.theta;
+        radius = controllerOutput.forwardSpeed / controllerOutput.rotationSpeed;
+//        controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, -PI / 3.0), PI / 3.0);
+    }
+    else
+    {
+        radius = 32768;
+        controllerOutput.rotationSpeed = 0;
+//        if (controllerOutput.rotationSpeed < 0.01)
+//        {
+//           radius = 32768;
+//        }
+//        controllerOutput.rotationSpeed = 32576;
     }
 
     std::cout << "FWS = " << controllerOutput.forwardSpeed << std::endl;
     std::cout << "RTS = " << controllerOutput.rotationSpeed << std::endl;
 
-    robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed / controllerOutput.rotationSpeed);
+    robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
     return controllerOutput;
 }
