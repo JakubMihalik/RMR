@@ -108,19 +108,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         odData.posX = 0;
         odData.posY = 0;
         odData.initRotation = robotdata.GyroAngle / 100.0;
+        odData.rotation = robotdata.GyroAngle / 100.0;
 
         emit uiValuesChanged(0, 0, odData.rotation);
-
         initialStart = false;
         return 0;
     }
 
     control->readOdometry(robotdata, &odData);
 
-    // TODO: Resolve encoder overflow
-
     Controller::ControllerOutput output = controller->regulate();
-    Controller::ErrorValue ev = controller->calculateErrors();
 
     if(datacounter%5)
     {
@@ -212,7 +209,7 @@ void MainWindow::on_pushButton_3_clicked() //back
 void MainWindow::on_pushButton_6_clicked() //left
 {
 //    robot.setRotationSpeed(3.14159/2);
-    control->leftMove(&robot, PI / 2);
+    control->leftMove(&robot, PI / 6);
   /*  std::vector<unsigned char> mess=robot.setRotationSpeed(3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -223,7 +220,7 @@ void MainWindow::on_pushButton_6_clicked() //left
 void MainWindow::on_pushButton_5_clicked()//right
 {
 //    robot.setRotationSpeed(-3.14159/2);
-    control->rightMove(&robot, PI / 2);
+    control->rightMove(&robot, PI / 6);
    /* std::vector<unsigned char> mess=robot.setRotationSpeed(-3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
