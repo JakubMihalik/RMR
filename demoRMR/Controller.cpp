@@ -33,6 +33,9 @@ Controller::ControllerOutput Controller::regulate()
     Controller::ErrorValue ev = Controller::calculateErrors();
     static Controller::ControllerOutput controllerOutput;
 
+    double reqFwdSpeed = 1000 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    double reqRotSpeed = 50 * ev.theta;
+
 //    std::cout << "EV.X: " << ev.x << std::endl;
 //    std::cout << "EV.Y: " << ev.y << std::endl << std::endl;
 
@@ -42,14 +45,23 @@ Controller::ControllerOutput Controller::regulate()
         return controllerOutput;
     }
 
-    controllerOutput.forwardSpeed = 1000 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    controllerOutput.rotationSpeed += 50 * ev.theta;
+    if (reqFwdSpeed > controllerOutput.forwardSpeed) // Pridavame
+        controllerOutput.forwardSpeed += 10 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    if (controllerOutput.forwardSpeed > reqFwdSpeed) // Spomalujeme
+        controllerOutput.forwardSpeed -= 30 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 400), 0); // A orezeme hranice
 
-    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
-    controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, PI / 3);
+    if (reqRotSpeed > controllerOutput.rotationSpeed) // Pridavame
+        controllerOutput.rotationSpeed += 0.5 * ev.theta;
+    if (controllerOutput.rotationSpeed > reqRotSpeed) // Spomalujeme
+        controllerOutput.rotationSpeed -= ev.theta;
+    controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, reqRotSpeed); // A orezeme hranice
+    if (controllerOutput.rotationSpeed > PI / 3)
+        controllerOutput.rotationSpeed = PI /3;
+    if (controllerOutput.rotationSpeed < - PI / 3)
+        controllerOutput.rotationSpeed = - PI / 3;
 
     double radius = 32768;
-
     if (abs(controllerOutput.rotationSpeed) > 0.001 && abs(controllerOutput.forwardSpeed) > 0.001)
     {
         radius = controllerOutput.forwardSpeed / controllerOutput.rotationSpeed;
@@ -58,8 +70,6 @@ Controller::ControllerOutput Controller::regulate()
     std::cout << "FW: " << controllerOutput.forwardSpeed << std::endl;
     std::cout << "RS: " << controllerOutput.rotationSpeed << std::endl;
     std::cout << "RA: " << radius << std::endl << std::endl;
-
-    std::cout << "Radius sign: " << (radius > 0 ? "+" : "-") << std::endl;
 
     robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
