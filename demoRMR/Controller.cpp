@@ -45,15 +45,15 @@ Controller::ControllerOutput Controller::regulate()
         return controllerOutput;
     }
 
-    if (reqFwdSpeed > controllerOutput.forwardSpeed) // Pridavame
+    if (reqFwdSpeed > controllerOutput.forwardSpeed) { // Pridavame
         controllerOutput.forwardSpeed += 10 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    }
     if (controllerOutput.forwardSpeed > reqFwdSpeed) // Spomalujeme
         controllerOutput.forwardSpeed -= 10 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 400), 0); // A orezeme hranice
+    controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 600), 0); // A orezeme hranice
 
-
-    controllerOutput.rotationSpeed = 5 * ev.theta;
-    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3.0);
+    controllerOutput.rotationSpeed = ev.theta * 3;
+//    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, -PI/3), PI/3);
 
 //    if (reqRotSpeed > controllerOutput.rotationSpeed) // Pridavame
 //        controllerOutput.rotationSpeed += 0.1 * ev.theta;
@@ -75,8 +75,14 @@ Controller::ControllerOutput Controller::regulate()
     std::cout << "FW: " << controllerOutput.forwardSpeed << std::endl;
     std::cout << "RS: " << controllerOutput.rotationSpeed << std::endl;
     std::cout << "RA: " << radius << std::endl << std::endl;
+    std::cout << "Error theta: " << ev.theta << std::endl << std::endl;
+    std::cout << "Error x: " << ev.x << std::endl << std::endl;
 
-    robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
+    if (abs(ev.theta) < PI-0.1) {
+        robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
+    } else {
+       robot->setRotationSpeed(controllerOutput.rotationSpeed);
+    }
 
     return controllerOutput;
 }
@@ -85,9 +91,15 @@ Controller::ErrorValue Controller::calculateErrors()
 {
     double eX = abs(this->desiredX - this->odData->posX);
     double eY = abs(this->desiredY - this->odData->posY);
+
+    // Calculate the difference between the current heading and the desired heading
     double eTheta = atan2(this->desiredY - this->odData->posY,
                           this->desiredX - this->odData->posX) - this->odData->rotation * PI / 180;
-
+    if (eTheta > PI) {
+        eTheta -= 2*PI;
+    } else if (eTheta < -PI) {
+        eTheta += 2*PI;
+    }
     Controller::ErrorValue e = {eX, eY, eTheta};
     return e;
 }
