@@ -52,9 +52,9 @@ Controller::ControllerOutput Controller::regulate()
     controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 400), 0); // A orezeme hranice
 
     if (reqRotSpeed > controllerOutput.rotationSpeed) // Pridavame
-        controllerOutput.rotationSpeed += 0.5 * ev.theta;
+        controllerOutput.rotationSpeed += 0.05 * ev.theta;
     if (controllerOutput.rotationSpeed > reqRotSpeed) // Spomalujeme
-        controllerOutput.rotationSpeed -= ev.theta;
+        controllerOutput.rotationSpeed -= 0.05 * ev.theta;
     controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, reqRotSpeed); // A orezeme hranice
     if (controllerOutput.rotationSpeed > PI / 3)
         controllerOutput.rotationSpeed = PI /3;
@@ -62,7 +62,7 @@ Controller::ControllerOutput Controller::regulate()
         controllerOutput.rotationSpeed = - PI / 3;
 
     double radius = 32768;
-    if (abs(controllerOutput.rotationSpeed) > 0.001 && abs(controllerOutput.forwardSpeed) > 0.001)
+    if (abs(controllerOutput.rotationSpeed) > deg2rad(10.0) && abs(controllerOutput.forwardSpeed) > 10)
     {
         radius = controllerOutput.forwardSpeed / controllerOutput.rotationSpeed;
     }
