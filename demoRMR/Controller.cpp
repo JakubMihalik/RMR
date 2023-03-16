@@ -34,10 +34,6 @@ Controller::ControllerOutput Controller::regulate()
     static Controller::ControllerOutput controllerOutput;
 
     double reqFwdSpeed = 50000 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    double reqRotSpeed = 50 * ev.theta;
-
-//    std::cout << "EV.X: " << ev.x << std::endl;
-//    std::cout << "EV.Y: " << ev.y << std::endl << std::endl;
 
     if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
     {
@@ -53,24 +49,10 @@ Controller::ControllerOutput Controller::regulate()
     controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 600), 0); // A orezeme hranice
 
     controllerOutput.rotationSpeed = ev.theta * 3;
-//    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, -PI/3), PI/3);
-
-//    if (reqRotSpeed > controllerOutput.rotationSpeed) // Pridavame
-//        controllerOutput.rotationSpeed += 0.1 * ev.theta;
-//    if (controllerOutput.rotationSpeed > reqRotSpeed) // Spomalujeme
-//        controllerOutput.rotationSpeed -= 0.1 * ev.theta;
-//    controllerOutput.rotationSpeed = min(controllerOutput.rotationSpeed, reqRotSpeed); // A orezeme hranice
-//    if (controllerOutput.rotationSpeed > PI / 3)
-//        controllerOutput.rotationSpeed = PI /3;
-//    if (controllerOutput.rotationSpeed < - PI / 3)
-//        controllerOutput.rotationSpeed = - PI / 3;
 
     double radius = 32768;
-//    if (abs(controllerOutput.rotationSpeed) > deg2rad(1.0) && abs(controllerOutput.forwardSpeed) > 5)
-//    {
-        double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
-        radius = controllerOutput.forwardSpeed / denom;
-//    }
+    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
+    radius = controllerOutput.forwardSpeed / denom;
 
     std::cout << "FW: " << controllerOutput.forwardSpeed << std::endl;
     std::cout << "RS: " << controllerOutput.rotationSpeed << std::endl;
@@ -78,7 +60,7 @@ Controller::ControllerOutput Controller::regulate()
     std::cout << "Error theta: " << ev.theta << std::endl << std::endl;
     std::cout << "Error x: " << ev.x << std::endl << std::endl;
 
-    if (abs(ev.theta) < PI-0.1) {
+    if (abs(ev.theta) < PI - 0.1) {
         robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
     } else {
        robot->setRotationSpeed(controllerOutput.rotationSpeed);
