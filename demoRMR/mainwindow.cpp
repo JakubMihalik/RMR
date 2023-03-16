@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, -1, 0, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 3, 0.8, 1, 0, 0, 1.5);
 
 }
 
