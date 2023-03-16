@@ -45,7 +45,6 @@ typedef struct {
 typedef struct {
     double x;
     double y;
-    bool checked;
 } CheckPoint;
 
 class ControlLogic

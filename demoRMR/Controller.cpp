@@ -7,6 +7,16 @@ Controller::Controller(Robot* robot, OdometryData* odData)
     this->Kp = 1;
     this->Ki = 0;
     this->Kd = 0;
+
+    CheckPoint p1 = {0, 3};
+    CheckPoint p2 = {2.6, 3};
+    CheckPoint p3 = {2.6, 0.5};
+    CheckPoint finish = {4, 0.5};
+
+    this->checkpoints.push(p1);
+    this->checkpoints.push(p2);
+    this->checkpoints.push(p3);
+    this->checkpoints.push(finish);
 }
 
 Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY, double Kp, double Ki, double Kd, double offset)
@@ -19,14 +29,22 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->Ki = Ki;
     this->Kd = Kd;
     this->offset = offset;
+
+    CheckPoint p1 = {0, 3};
+    CheckPoint p2 = {2.6, 3};
+    CheckPoint p3 = {2.6, 0.5};
+    CheckPoint finish = {4, 0.5};
+
+    this->checkpoints.push(p1);
+    this->checkpoints.push(p2);
+    this->checkpoints.push(p3);
+    this->checkpoints.push(finish);
 }
 
 Controller::~Controller()
 {
     delete this->robot;
 }
-
-double currentRamp = 1;
 
 Controller::ControllerOutput Controller::regulate()
 {
@@ -38,6 +56,12 @@ Controller::ControllerOutput Controller::regulate()
     if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
     {
         robot->setTranslationSpeed(0);
+
+        if (this->checkpoints.size() > 1)
+        {
+            this->checkpoints.pop();
+        }
+
         return controllerOutput;
     }
 
@@ -71,12 +95,12 @@ Controller::ControllerOutput Controller::regulate()
 
 Controller::ErrorValue Controller::calculateErrors()
 {
-    double eX = abs(this->desiredX - this->odData->posX);
-    double eY = abs(this->desiredY - this->odData->posY);
+    double eX = abs(this->checkpoints.front().x - this->odData->posX);
+    double eY = abs(this->checkpoints.front().y - this->odData->posY);
 
     // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->desiredY - this->odData->posY,
-                          this->desiredX - this->odData->posX) - this->odData->rotation * PI / 180;
+    double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
+                          this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {

@@ -7,6 +7,7 @@
 #include "robot.h"
 #include "ControlLogic.h"
 #include <cmath>
+#include <queue>
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
@@ -51,6 +52,8 @@ public:
     void setDesiredPosition(double x, double y);
     void setGains(double Kp, double Ki, double Kd);
     void setOffset(double offset);
+
+    std::queue<CheckPoint> checkpoints;
 };
 
 #endif // CONTROLLER_H

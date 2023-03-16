@@ -19,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-//    ipaddress="127.0.0.1";
-    ipaddress = "192.168.1.14";
+    ipaddress="127.0.0.1";
+//    ipaddress = "192.168.1.14";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, 3, 0.8, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 3, 3, 1, 0, 0, 1.5);
 
 }
 
