@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
     ipaddress="127.0.0.1";
-//    ipaddress = "192.168.1.13";
+//    ipaddress = "192.168.1.14";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Construtror objects
-    controller = new Controller(&robot, &odData, 0.5, 0.5, 1, 0, 0, 1.5);
+    controller = new Controller(&robot, &odData, 3, 3, 1, 0, 0, 1.5);
 
 }
 
@@ -108,19 +108,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         odData.posX = 0;
         odData.posY = 0;
         odData.initRotation = robotdata.GyroAngle / 100.0;
+        odData.rotation = robotdata.GyroAngle / 100.0;
 
         emit uiValuesChanged(0, 0, odData.rotation);
-
         initialStart = false;
         return 0;
     }
 
     control->readOdometry(robotdata, &odData);
 
-    // TODO: Resolve encoder overflow
-
     Controller::ControllerOutput output = controller->regulate();
-    Controller::ErrorValue ev = controller->calculateErrors();
 
     if(datacounter%5)
     {
@@ -166,8 +163,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 
@@ -212,7 +209,7 @@ void MainWindow::on_pushButton_3_clicked() //back
 void MainWindow::on_pushButton_6_clicked() //left
 {
 //    robot.setRotationSpeed(3.14159/2);
-    control->leftMove(&robot, PI / 2);
+    control->leftMove(&robot, PI / 6);
   /*  std::vector<unsigned char> mess=robot.setRotationSpeed(3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -223,7 +220,7 @@ void MainWindow::on_pushButton_6_clicked() //left
 void MainWindow::on_pushButton_5_clicked()//right
 {
 //    robot.setRotationSpeed(-3.14159/2);
-    control->rightMove(&robot, PI / 2);
+    control->rightMove(&robot, PI / 6);
    /* std::vector<unsigned char> mess=robot.setRotationSpeed(-3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {

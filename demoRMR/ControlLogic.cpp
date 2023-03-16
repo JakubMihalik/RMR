@@ -20,19 +20,21 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     /******** [B] - Detect overflow ********/
 
     // Left Wheel
-    if (data->leftWheelTicks > 65200 && robotdata.EncoderLeft < 300)
+//    if (data->leftWheelTicks > 65200 && robotdata.EncoderLeft < 300)
+    if ((data->leftWheelTicks - robotdata.EncoderLeft) > 30000)
         data->leftWheelOverflow++;
-    if (data->leftWheelTicks < 300 && robotdata.EncoderLeft > 65200)
+//    if (data->leftWheelTicks < 300 && robotdata.EncoderLeft > 65200)
+    if ((data->leftWheelTicks - robotdata.EncoderLeft) < -30000)
         data->leftWheelOverflow--;
     // Right Wheel
-    if (data->rightWheelTicks > 65200 && robotdata.EncoderRight < 300)
+//    if (data->rightWheelTicks > 65200 && robotdata.EncoderRight < 300)
+    if ((data->rightWheelTicks - robotdata.EncoderRight) > 30000)
         data->rightWheelOverflow++;
-    if (data->rightWheelTicks < 300 && robotdata.EncoderRight > 65200)
+//    if (data->rightWheelTicks < 300 && robotdata.EncoderRight > 65200)
+    if ((data->rightWheelTicks - robotdata.EncoderRight) < -30000)
         data->rightWheelOverflow--;
 
     /******** [E] - Detect overflow ********/
-
-    // TODO: Vyriesit pretecenie gyroskopu
 
     data->lDelta = (65535 * data->leftWheelOverflow) + robotdata.EncoderLeft - data->leftWheelTicks;
     data->rDelta = (65535 * data->rightWheelOverflow) + robotdata.EncoderRight - data->rightWheelTicks;
@@ -42,36 +44,19 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     data->distRightWheel += TICK_TO_METER * data->rDelta;
 
     // Update rotation
-//    data->rotation = robotdata.GyroAngle / 100.0;
-    if (data->initRotation < 0)
-    {
-        if (robotdata.GyroAngle < 0) {
-            data->rotation = data->initRotation + 360 + robotdata.GyroAngle / 100.0;
-        } else {
-            data->rotation = data->initRotation + robotdata.GyroAngle / 100.0;
-        }
-//        data->rotation = data->initRotation + (robotdata.GyroAngle / 100.0);
-    }
-    else
-    {
-        if (robotdata.GyroAngle < 0) {
-            data->rotation = data->initRotation - 360 + robotdata.GyroAngle / 100.0;
-        } else {
-            data->rotation = data->initRotation - robotdata.GyroAngle / 100.0;
-        }
-    }
+    double rotation = fmod((robotdata.GyroAngle / 100.0 - data->initRotation), 360.0);
+    if (rotation > 180.0)
+        rotation -= 360.0;
+    else if (rotation < -180.0)
+        rotation += 360.0;
 
-    if (robotdata.GyroAngle < 0) {
-        data->rotation = 360 + robotdata.GyroAngle / 100.0;
-    } else {
-        data->rotation = robotdata.GyroAngle / 100.0;
-    }
+    data->rotation = rotation;
 
     // Calculate total length
     double dLeftDist =  data->lDelta * TICK_TO_METER;
     double dRightDist = data->rDelta * TICK_TO_METER;
     data->distance = (dLeftDist + dRightDist) / 2;
-    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2*0.23);
+    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * 0.23); // 0.23 je rozchod kolies
 
     // Calculate global position X, Y
     data->posX += data->distance * cos(data->rotation * PI / 180.0);

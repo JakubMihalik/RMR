@@ -39,6 +39,14 @@ typedef struct {
     double initRotation;
 } OdometryData;
 
+/**
+ * Checkpoint structure structure
+**/
+typedef struct {
+    double x;
+    double y;
+} CheckPoint;
+
 class ControlLogic
 {
 public:

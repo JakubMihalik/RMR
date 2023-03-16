@@ -60,12 +60,10 @@ win32 {
 SOURCES += main.cpp\
         ControlLogic.cpp \
         Controller.cpp \
-        RobotRamp.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
     ControlLogic.h \
-    Controller.h \
-    RobotRamp.h
+    Controller.h
 
 FORMS    += mainwindow.ui
