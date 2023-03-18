@@ -60,10 +60,12 @@ win32 {
 SOURCES += main.cpp\
         ControlLogic.cpp \
         Controller.cpp \
+        ObjectDetection.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
     ControlLogic.h \
-    Controller.h
+    Controller.h \
+    ObjectDetection.h
 
 FORMS    += mainwindow.ui

@@ -78,12 +78,6 @@ Controller::ControllerOutput Controller::regulate()
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
     radius = controllerOutput.forwardSpeed / denom;
 
-    std::cout << "FW: " << controllerOutput.forwardSpeed << std::endl;
-    std::cout << "RS: " << controllerOutput.rotationSpeed << std::endl;
-    std::cout << "RA: " << radius << std::endl << std::endl;
-    std::cout << "Error theta: " << ev.theta << std::endl << std::endl;
-    std::cout << "Error x: " << ev.x << std::endl << std::endl;
-
     if (abs(ev.theta) < PI - 0.1) {
         robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
     } else {
