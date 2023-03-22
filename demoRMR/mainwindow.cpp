@@ -128,8 +128,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     }
 
     control->readOdometry(robotdata, &odData);
-
-    /*Controller::ControllerOutput output =*/controller->regulate();
+    controller->regulate();
 
     if(datacounter%5)
     {
@@ -154,6 +153,8 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     dm = objDetect->readLaserData(laserData);
     objDetect->writeLidarMap(lidarData, odData, laserData);
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+
+    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 
     updateLaserPicture=1;
