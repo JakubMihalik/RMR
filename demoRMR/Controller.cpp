@@ -30,15 +30,17 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->Kd = Kd;
     this->offset = offset;
 
-    CheckPoint p1 = {0, 3};
-    CheckPoint p2 = {2.6, 3};
-    CheckPoint p3 = {2.6, 0.5};
-    CheckPoint finish = {4, 0.5};
+    CheckPoint p1 = {1, 0.1};
+
+//    CheckPoint p1 = {0, 3};
+//    CheckPoint p2 = {2.6, 3};
+//    CheckPoint p3 = {2.6, 0.5};
+//    CheckPoint finish = {4, 0.5};
 
     this->checkpoints.push(p1);
-    this->checkpoints.push(p2);
-    this->checkpoints.push(p3);
-    this->checkpoints.push(finish);
+//    this->checkpoints.push(p2);
+//    this->checkpoints.push(p3);
+//    this->checkpoints.push(finish);
 }
 
 Controller::~Controller()
@@ -51,8 +53,15 @@ Controller::ControllerOutput Controller::regulate()
     Controller::ErrorValue ev = Controller::calculateErrors();
     static Controller::ControllerOutput controllerOutput;
 
-    double reqFwdSpeed = 50000 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    double reqFwdSpeed = 500 * distance;
+    double reqRotSpeed = 10 * ev.theta;
 
+    double rotConst = PI/46;
+    double fwdConst = 5;
+
+
+    // Je v v pozadovanom priestore
     if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
     {
         robot->setTranslationSpeed(0);
@@ -65,26 +74,35 @@ Controller::ControllerOutput Controller::regulate()
         return controllerOutput;
     }
 
-    if (reqFwdSpeed > controllerOutput.forwardSpeed) { // Pridavame
-        controllerOutput.forwardSpeed += 10 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    if (reqFwdSpeed - controllerOutput.forwardSpeed > fwdConst)
+    {
+        controllerOutput.forwardSpeed += fwdConst;
     }
-    if (controllerOutput.forwardSpeed > reqFwdSpeed) // Spomalujeme
-        controllerOutput.forwardSpeed -= 10 * sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    controllerOutput.forwardSpeed = max(min(min(controllerOutput.forwardSpeed, reqFwdSpeed), 600), 0); // A orezeme hranice
+    else
+    {
+        controllerOutput.forwardSpeed = reqFwdSpeed;
+    }
+//    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
 
-    controllerOutput.rotationSpeed = ev.theta * 3;
 
-    double radius = 32768;
+    if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
+    {
+        controllerOutput.rotationSpeed -= rotConst;
+    }
+    else if (reqFwdSpeed - controllerOutput.forwardSpeed > rotConst)
+    {
+        controllerOutput.rotationSpeed += rotConst;
+    }
+    else {
+        controllerOutput.rotationSpeed = reqRotSpeed;
+    }
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), - PI / 3);
+
+    // toto trha robot ak je tam len x!
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
-    radius = controllerOutput.forwardSpeed / denom;
+    double radius = controllerOutput.forwardSpeed / denom;
 
-    std::cout << "FW: " << controllerOutput.forwardSpeed << std::endl;
-    std::cout << "RS: " << controllerOutput.rotationSpeed << std::endl;
-    std::cout << "RA: " << radius << std::endl << std::endl;
-    std::cout << "Error theta: " << ev.theta << std::endl << std::endl;
-    std::cout << "Error x: " << ev.x << std::endl << std::endl;
-
-    if (abs(ev.theta) < PI - 0.1) {
+    if (abs(ev.theta) < PI/5) {
         robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
     } else {
        robot->setRotationSpeed(controllerOutput.rotationSpeed);

@@ -1,16 +1,23 @@
 #include "mainwindow.h"
-#include "ControlLogic.h"
-#include "Controller.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
 
 /** Custom variables -> move to interface later **/
+#include "ControlLogic.h"
+#include "Controller.h"
+#include "ObjectDetection.h"
+#include <fstream>
+#include <iostream>
 
 ControlLogic* control = new ControlLogic();
+ObjectDetection* objDetect = new ObjectDetection();
 OdometryData odData = {0};
 Controller* controller;
 bool initialStart = true;
+ofstream robotPositions;
+ofstream lidarData;
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-    ipaddress="127.0.0.1";
-//    ipaddress = "192.168.1.14";
+//    ipaddress="127.0.0.1";
+    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -35,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Construtror objects
     controller = new Controller(&robot, &odData, 3, 3, 1, 0, 0, 1.5);
+    robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
+    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
 
 }
 
@@ -42,6 +51,9 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete control;
+    delete objDetect;
+    robotPositions.close();
+    lidarData.close();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -117,7 +129,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
     control->readOdometry(robotdata, &odData);
 
-    Controller::ControllerOutput output = controller->regulate();
+    /*Controller::ControllerOutput output =*/controller->regulate();
 
     if(datacounter%5)
     {
@@ -136,6 +148,14 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
+
+    //Laser data processing
+    DistanceMeasure dm;
+    dm = objDetect->readLaserData(laserData);
+    lidarData << dm.angle << "," << dm.distance << "\n";
+    robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+    // End laser data processing
+
     updateLaserPicture=1;
     update();//tento prikaz prinuti prekreslit obrazovku.. zavola sa paintEvent funkcia
 
