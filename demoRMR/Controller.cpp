@@ -8,14 +8,14 @@ Controller::Controller(Robot* robot, OdometryData* odData)
     this->Ki = 0;
     this->Kd = 0;
 
-    CheckPoint p1 = {0, 3};
+    /*CheckPoint p1 = {0, 3};
     CheckPoint p2 = {2.6, 3};
-    CheckPoint p3 = {2.6, 0.5};
+    CheckPoint p3 = {2.6, 0.5};*/
     CheckPoint finish = {4, 0.5};
 
-    this->checkpoints.push(p1);
+    /*this->checkpoints.push(p1);
     this->checkpoints.push(p2);
-    this->checkpoints.push(p3);
+    this->checkpoints.push(p3);*/
     this->checkpoints.push(finish);
 }
 
@@ -36,10 +36,10 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     CheckPoint p3 = {2.6, 0.5};
     CheckPoint finish = {4, 0.5};
 
-    this->checkpoints.push(p1);
-    this->checkpoints.push(p2);
-    this->checkpoints.push(p3);
     this->checkpoints.push(finish);
+    this->checkpoints.push(p3);
+    this->checkpoints.push(p2);
+    this->checkpoints.push(p1);
 }
 
 Controller::~Controller()
@@ -110,7 +110,7 @@ Controller::ControllerOutput Controller::regulate()
     return controllerOutput;
 }
 
-Controller::ErrorValue Controller::calculateErrors()
+/*Controller::ErrorValue Controller::calculateErrors()
 {
     double eX = abs(this->checkpoints.front().x - this->odData->posX);
     double eY = abs(this->checkpoints.front().y - this->odData->posY);
@@ -118,6 +118,23 @@ Controller::ErrorValue Controller::calculateErrors()
     // Calculate the difference between the current heading and the desired heading
     double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
                           this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
+    if (eTheta > PI) {
+        eTheta -= 2*PI;
+    } else if (eTheta < -PI) {
+        eTheta += 2*PI;
+    }
+    Controller::ErrorValue e = {eX, eY, eTheta};
+    return e;
+}*/
+
+Controller::ErrorValue Controller::calculateErrors()
+{
+    double eX = abs(this->checkpoints.top().x - this->odData->posX);
+    double eY = abs(this->checkpoints.top().y - this->odData->posY);
+
+    // Calculate the difference between the current heading and the desired heading
+    double eTheta = atan2(this->checkpoints.top().y - this->odData->posY,
+                          this->checkpoints.top().x - this->odData->posX) - this->odData->rotation * PI / 180;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {
