@@ -8,6 +8,7 @@
 #include "ControlLogic.h"
 #include <cmath>
 #include <queue>
+#include <stack>
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
@@ -53,7 +54,8 @@ public:
     void setGains(double Kp, double Ki, double Kd);
     void setOffset(double offset);
 
-    std::queue<CheckPoint> checkpoints;
+//    std::queue<CheckPoint> checkpoints;
+    std::stack<CheckPoint> checkpoints;
 };
 
 #endif // CONTROLLER_H
