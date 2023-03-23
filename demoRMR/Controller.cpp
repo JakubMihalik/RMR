@@ -7,8 +7,12 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->desiredX = desiredX;
     this->desiredY = desiredY;
 
-    CheckPoint finish = {desiredX, desiredY};
-    this->checkpoints.push(finish);
+    /*CheckPoint finish = {desiredX, desiredY};
+    this->checkpoints.push(finish);*/
+    this->checkpoints.push({4, 0.5});
+    this->checkpoints.push({2.6, 0.5});
+    this->checkpoints.push({2.6, 3});
+    this->checkpoints.push({0, 3});
 }
 
 Controller::~Controller()

@@ -17,7 +17,7 @@ Controller* controller;
 bool initialStart = true;
 ofstream robotPositions;
 ofstream lidarData;
-
+ofstream map2D;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -44,16 +44,24 @@ MainWindow::MainWindow(QWidget *parent) :
     controller = new Controller(&robot, &odData, 0, 3);
     robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
     lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
+    map2D.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\map2D.txt");
 
 }
 
 MainWindow::~MainWindow()
 {
+    objDetect->writeMap2D(map2D);
+    map2D.close();
+    robotPositions.close();
+    lidarData.close();
+
+    while (map2D.is_open() || robotPositions.is_open() || lidarData.is_open());
+
     delete ui;
     delete control;
     delete objDetect;
-    robotPositions.close();
-    lidarData.close();
+
+    std::cout << "All closed and destroyed\n\n";
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -153,8 +161,6 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     dm = objDetect->readLaserData(laserData);
     objDetect->writeLidarMap(lidarData, odData, laserData);
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
-
-    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 
     updateLaserPicture=1;
