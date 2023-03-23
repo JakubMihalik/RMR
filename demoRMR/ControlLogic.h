@@ -9,9 +9,8 @@
 /**
  * Dependant includes
 **/
-#include "robot.h"
 #include <cmath>
-
+#include "CKobuki.h"
 /**
  * Global variables
 **/
@@ -35,7 +34,6 @@ typedef struct {
     int rightWheelOverflow;
     int rDelta;
     int lDelta;
-    double forwardSpeed;
     double initRotation;
 } OdometryData;
 
@@ -56,15 +54,6 @@ public:
     void initControl();
 
     OdometryData readOdometry(TKobukiData robotdata, OdometryData* data);
-
-    void forwardMove(Robot* robot, int speed);
-    void reverseMove(Robot* robot, int speed);
-    void leftMove(Robot* robot, double speed);
-    void rightMove(Robot* robot, double speed);
-
-    void navigation(Robot* robot);
-    void localisation(Robot* robot);
-    void autonomousRide(Robot* robot, OdometryData data);
 };
 
 #endif // CONTROLLOGIC_H

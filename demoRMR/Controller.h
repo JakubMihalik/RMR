@@ -15,19 +15,14 @@
 class Controller
 {
 public:
-    Controller(Robot*, OdometryData*);
-    Controller(Robot*, OdometryData*, double desiredX, double desiredY, double Kp, double Ki, double Kd, double offset);
+    Controller(Robot*, OdometryData*, double desiredX, double desiredY);
     ~Controller();
 
 private:
-    double Kp;
-    double Ki;
-    double Kd;
     Robot* robot;
     OdometryData* odData;
     double desiredX;
     double desiredY;
-    double offset;
 
 /** Public variables and structures **/
 public:
@@ -45,17 +40,12 @@ public:
         double reached;
     } ControllerOutput;
 
+    std::stack<CheckPoint> checkpoints;
+
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
     ControllerOutput regulate();
-
-    void setDesiredPosition(double x, double y);
-    void setGains(double Kp, double Ki, double Kd);
-    void setOffset(double offset);
-
-//    std::queue<CheckPoint> checkpoints;
-    std::stack<CheckPoint> checkpoints;
 };
 
 #endif // CONTROLLER_H
