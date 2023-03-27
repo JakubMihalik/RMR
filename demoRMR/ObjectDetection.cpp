@@ -42,20 +42,20 @@ void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, Lase
         file << x << "," << y << "\n";
 
         // Binary map
-        if (laser.Data[i].scanDistance < 5000.0)
+        if (laser.Data[i].scanDistance < 5000.0 && laser.Data[i].scanDistance > 130)
         {
             int mapX = round(x / MAP_RESOLUTION);
             int mapY = round(y / MAP_RESOLUTION);
-            this->map2D[59 - mapY][mapX] = 1;
+            this->map2D[MAP_SIZE - mapY][mapX] = 1;
         }
     }
 }
 
 void ObjectDetection::writeMap2D(std::ofstream& file)
 {
-    for (int y{0}; y < 60; y++)
+    for (int y{0}; y < MAP_SIZE; y++)
     {
-        for (int x{0}; x < 60; x++)
+        for (int x{0}; x < MAP_SIZE; x++)
         {
             file << (this->map2D[y][x] != 0 ? "X" : " ");
         }

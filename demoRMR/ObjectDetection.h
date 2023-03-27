@@ -8,6 +8,9 @@
 #include <fstream>
 #include <stack>
 
+// Custom defines
+#define MAP_SIZE 120
+
 typedef struct
 {
     double angle;
@@ -21,8 +24,8 @@ public:
     ~ObjectDetection();
 
 public:
-    int map2D[60][60] = {{0}};
-    static constexpr double MAP_RESOLUTION = 0.1;
+    int map2D[MAP_SIZE][MAP_SIZE] = {{0}};
+    static constexpr double MAP_RESOLUTION = 0.05;
 
 public:
     DistanceMeasure readLaserData(LaserMeasurement laser);

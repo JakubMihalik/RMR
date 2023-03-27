@@ -43,9 +43,25 @@ MainWindow::MainWindow(QWidget *parent) :
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
     robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
-    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
-    map2D.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\map2D.txt");
+    if (!robotPositions.is_open())
+    {
+        std::cout << "File robotPositions cannot be opened\n";
+        return;
+    }
 
+    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
+    if (!lidarData.is_open())
+    {
+        std::cout << "File lidarData cannot be opened\n";
+        return;
+    }
+
+    map2D.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\map2D.txt");
+    if (!map2D.is_open())
+    {
+        std::cout << "File map2D cannot be opened\n";
+        return;
+    }
 }
 
 MainWindow::~MainWindow()
@@ -190,8 +206,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 
