@@ -1,5 +1,7 @@
 #include "ObjectDetection.h"
 
+#define DEBUG
+
 ObjectDetection::ObjectDetection()
 {
     // Todo: Constructor
@@ -44,9 +46,15 @@ void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, Lase
         // Binary map
         if (laser.Data[i].scanDistance < 5000.0 && laser.Data[i].scanDistance > 130)
         {
-            int mapX = round(x / MAP_RESOLUTION);
-            int mapY = round(y / MAP_RESOLUTION);
-            this->map2D[MAP_SIZE - mapY][mapX] = 1;
+            int mapX = (MAP_SIZE / 2 - 1) + std::round(x / MAP_RESOLUTION);
+            int mapY = (MAP_SIZE / 2 - 1) - std::round(y / MAP_RESOLUTION);
+#ifdef DEBUG
+            if (mapX < 0 || mapX > MAP_SIZE)
+                std::cout << "X:" << mapX << std::endl;
+            if (mapY < 0 || mapY > MAP_SIZE)
+                std::cout << "Y:" << MAP_SIZE - mapY << std::endl;
+#endif
+            this->map2D[mapY][mapX] = 1;
         }
     }
 }

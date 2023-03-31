@@ -9,7 +9,8 @@
 #include <stack>
 
 // Custom defines
-#define MAP_SIZE 120
+#define MAP_RESOLUTION 0.05
+#define MAP_SIZE 240
 
 typedef struct
 {
@@ -25,7 +26,6 @@ public:
 
 public:
     int map2D[MAP_SIZE][MAP_SIZE] = {{0}};
-    static constexpr double MAP_RESOLUTION = 0.05;
 
 public:
     DistanceMeasure readLaserData(LaserMeasurement laser);
