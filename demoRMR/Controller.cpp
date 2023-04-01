@@ -31,9 +31,14 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->offset = offset;
 
 //    CheckPoint p1 = {1, 0.1};
-    CheckPoint finish = {0, 5};
 
-    this->checkpoints.push(finish);
+//    this->checkpoints.push({4, 0.5});
+//    this->checkpoints.push({2.6, 0.5});
+//    this->checkpoints.push({2.6, 3});
+//    this->checkpoints.push({0, 3});
+    this->checkpoints.push({0.1, 2});
+
+//    this->checkpoints.push(finish);
 }
 
 Controller::~Controller()
@@ -89,17 +94,13 @@ Controller::ControllerOutput Controller::regulate()
     else {
         controllerOutput.rotationSpeed = reqRotSpeed;
     }
-    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), - PI / 3);
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3);
 
-    // toto trha robot ak je tam len x!
-    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
+    // toto trha robot ak ma ist robot iba rovno!
+    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;
 
-    if (abs(ev.theta) < PI/5) {
-        robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
-    } else {
-       robot->setRotationSpeed(controllerOutput.rotationSpeed);
-    }
+    robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
     return controllerOutput;
 }
