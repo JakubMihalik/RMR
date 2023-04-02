@@ -72,14 +72,15 @@ Controller::ControllerOutput Controller::regulate()
     controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), - PI / 3);
 
     // toto trha robot ak je tam len x!
-    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.000001;
+    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;
 
-    if (abs(ev.theta) < PI/5) {
+    /*if (abs(ev.theta) < PI/5) {
         robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
     } else {
        robot->setRotationSpeed(controllerOutput.rotationSpeed);
-    }
+    }*/
+    robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
     return controllerOutput;
 }
