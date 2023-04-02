@@ -32,11 +32,11 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
 
 //    CheckPoint p1 = {1, 0.1};
 
-//    this->checkpoints.push({4, 0.5});
-//    this->checkpoints.push({2.6, 0.5});
-//    this->checkpoints.push({2.6, 3});
-//    this->checkpoints.push({0, 3});
-    this->checkpoints.push({0.1, 2});
+    this->checkpoints.push({4, 0.5});
+    this->checkpoints.push({2.6, 0.5});
+    this->checkpoints.push({2.6, 3});
+    this->checkpoints.push({0, 3});
+//    this->checkpoints.push({0.1, 2});
 
 //    this->checkpoints.push(finish);
 }

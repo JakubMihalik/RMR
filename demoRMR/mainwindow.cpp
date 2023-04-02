@@ -154,7 +154,7 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     objDetect->writeLidarMap(lidarData, odData, laserData);
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
 
-    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
+//    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 
     updateLaserPicture=1;
