@@ -61,11 +61,13 @@ SOURCES += main.cpp\
         ControlLogic.cpp \
         Controller.cpp \
         ObjectDetection.cpp \
+        PathPlanning.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
     ControlLogic.h \
     Controller.h \
-    ObjectDetection.h
+    ObjectDetection.h \
+    PathPlanning.h
 
 FORMS    += mainwindow.ui

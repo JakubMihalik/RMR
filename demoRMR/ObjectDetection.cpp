@@ -1,5 +1,7 @@
 #include "ObjectDetection.h"
 
+#define DEBUG
+
 ObjectDetection::ObjectDetection()
 {
     // Todo: Constructor
@@ -40,7 +42,28 @@ void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, Lase
         double y = data.posY + (laser.Data[i].scanDistance / 1000.0) * sin(lidarAngleRad + robotAngleRad);
 
         file << x << "," << y << "\n";
+
+        // Binary map
+        if (laser.Data[i].scanDistance < 5000.0 && laser.Data[i].scanDistance > 130)
+        {
+            int mapX = (MAP_SIZE / 2 - 1) + std::round(x / MAP_RESOLUTION);
+            int mapY = (MAP_SIZE / 2 - 1) - std::round(y / MAP_RESOLUTION);
+            this->map2D[mapY][mapX] = 1;
+        }
     }
+}
+
+void ObjectDetection::writeMap2D(std::ofstream& file)
+{
+    for (int y{0}; y < MAP_SIZE; y++)
+    {
+        for (int x{0}; x < MAP_SIZE; x++)
+        {
+            file << (this->map2D[y][x] != 0 ? "X" : " ");
+        }
+        file << "\n";
+    }
+    std::cout << "Map written\n";
 }
 
 void ObjectDetection::avoidObstacles(LaserMeasurement laser, OdometryData robotData, std::stack<CheckPoint>& checkpoints)

@@ -17,7 +17,7 @@ Controller* controller;
 bool initialStart = true;
 ofstream robotPositions;
 ofstream lidarData;
-
+ofstream map2D;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -40,20 +40,44 @@ MainWindow::MainWindow(QWidget *parent) :
     useCamera1=false;
     datacounter=0;
 
-    // Construtror objects
-    controller = new Controller(&robot, &odData, 3, 3, 1, 0, 0, 1.5);
+    // Constructor objects
+    controller = new Controller(&robot, &odData, 0, 3);
     robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
-    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
+    if (!robotPositions.is_open())
+    {
+        std::cout << "File robotPositions cannot be opened\n";
+        return;
+    }
 
+    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
+    if (!lidarData.is_open())
+    {
+        std::cout << "File lidarData cannot be opened\n";
+        return;
+    }
+
+    map2D.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\map2D.txt");
+    if (!map2D.is_open())
+    {
+        std::cout << "File map2D cannot be opened\n";
+        return;
+    }
 }
 
 MainWindow::~MainWindow()
 {
+    objDetect->writeMap2D(map2D);
+    map2D.close();
+    robotPositions.close();
+    lidarData.close();
+
+    while (map2D.is_open() || robotPositions.is_open() || lidarData.is_open());
+
     delete ui;
     delete control;
     delete objDetect;
-    robotPositions.close();
-    lidarData.close();
+
+    std::cout << "All closed and destroyed\n\n";
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -207,8 +231,7 @@ void MainWindow::on_pushButton_9_clicked() //start button
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
-//    robot.setTranslationSpeed(500);
-    control->forwardMove(&robot, 500);
+    robot.setTranslationSpeed(500);
     /*std::vector<unsigned char> mess=robot.setTranslationSpeed(500);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -218,8 +241,7 @@ void MainWindow::on_pushButton_2_clicked() //forward
 
 void MainWindow::on_pushButton_3_clicked() //back
 {
-//    robot.setTranslationSpeed(-250);
-    control->reverseMove(&robot, 500);
+    robot.setTranslationSpeed(-250);
   /*  std::vector<unsigned char> mess=robot.setTranslationSpeed(-250);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -229,8 +251,7 @@ void MainWindow::on_pushButton_3_clicked() //back
 
 void MainWindow::on_pushButton_6_clicked() //left
 {
-//    robot.setRotationSpeed(3.14159/2);
-    control->leftMove(&robot, PI / 6);
+    robot.setRotationSpeed(3.14159/2);
   /*  std::vector<unsigned char> mess=robot.setRotationSpeed(3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -240,8 +261,7 @@ void MainWindow::on_pushButton_6_clicked() //left
 
 void MainWindow::on_pushButton_5_clicked()//right
 {
-//    robot.setRotationSpeed(-3.14159/2);
-    control->rightMove(&robot, PI / 6);
+    robot.setRotationSpeed(-3.14159/2);
    /* std::vector<unsigned char> mess=robot.setRotationSpeed(-3.14159/2);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {
@@ -251,11 +271,7 @@ void MainWindow::on_pushButton_5_clicked()//right
 
 void MainWindow::on_pushButton_4_clicked() //stop
 {
-//    robot.setTranslationSpeed(0);
-    control->forwardMove(&robot, 0);
-    control->reverseMove(&robot, 0);
-    control->leftMove(&robot, 0);
-    control->rightMove(&robot, 0);
+    robot.setTranslationSpeed(0);
   /*  std::vector<unsigned char> mess=robot.setTranslationSpeed(0);
     if (sendto(rob_s, (char*)mess.data(), sizeof(char)*mess.size(), 0, (struct sockaddr*) &rob_si_posli, rob_slen) == -1)
     {

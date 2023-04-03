@@ -1,49 +1,24 @@
 #include "Controller.h"
 
-Controller::Controller(Robot* robot, OdometryData* odData)
-{
-    this->robot = robot;
-    this->odData = odData;
-    this->Kp = 1;
-    this->Ki = 0;
-    this->Kd = 0;
-
-    /*CheckPoint p1 = {0, 3};
-    CheckPoint p2 = {2.6, 3};
-    CheckPoint p3 = {2.6, 0.5};*/
-    CheckPoint finish = {4, 0.5};
-
-    /*this->checkpoints.push(p1);
-    this->checkpoints.push(p2);
-    this->checkpoints.push(p3);*/
-    this->checkpoints.push(finish);
-}
-
-Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY, double Kp, double Ki, double Kd, double offset)
+Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY)
 {
     this->robot = robot;
     this->odData = odData;
     this->desiredX = desiredX;
     this->desiredY = desiredY;
-    this->Kp = Kp;
-    this->Ki = Ki;
-    this->Kd = Kd;
-    this->offset = offset;
 
-//    CheckPoint p1 = {1, 0.1};
-
+    /*CheckPoint finish = {desiredX, desiredY};
+    this->checkpoints.push(finish);*/
     this->checkpoints.push({4, 0.5});
     this->checkpoints.push({2.6, 0.5});
     this->checkpoints.push({2.6, 3});
     this->checkpoints.push({0, 3});
-//    this->checkpoints.push({0.1, 2});
-
-//    this->checkpoints.push(finish);
 }
 
 Controller::~Controller()
 {
     delete this->robot;
+    delete this->odData;
 }
 
 Controller::ControllerOutput Controller::regulate()
@@ -80,7 +55,7 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.forwardSpeed = reqFwdSpeed;
     }
-//    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
+    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
 
 
     if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
@@ -105,23 +80,6 @@ Controller::ControllerOutput Controller::regulate()
     return controllerOutput;
 }
 
-/*Controller::ErrorValue Controller::calculateErrors()
-{
-    double eX = abs(this->checkpoints.front().x - this->odData->posX);
-    double eY = abs(this->checkpoints.front().y - this->odData->posY);
-
-    // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
-                          this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
-    if (eTheta > PI) {
-        eTheta -= 2*PI;
-    } else if (eTheta < -PI) {
-        eTheta += 2*PI;
-    }
-    Controller::ErrorValue e = {eX, eY, eTheta};
-    return e;
-}*/
-
 Controller::ErrorValue Controller::calculateErrors()
 {
     double eX = abs(this->checkpoints.top().x - this->odData->posX);
@@ -138,24 +96,3 @@ Controller::ErrorValue Controller::calculateErrors()
     Controller::ErrorValue e = {eX, eY, eTheta};
     return e;
 }
-
-/** Getters and Setters  **/
-void Controller::setDesiredPosition(double x, double y)
-{
-    this->desiredX = x;
-    this->desiredY = y;
-}
-
-void Controller::setGains(double Kp, double Ki, double Kd)
-{
-    this->Kp = Kp;
-    this->Ki = Ki;
-    this->Kd = Kd;
-}
-
-void Controller::setOffset(double offset)
-{
-    this->offset =  offset;
-}
-
-
