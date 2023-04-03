@@ -44,7 +44,7 @@ void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, Lase
         file << x << "," << y << "\n";
 
         // Binary map
-        if (laser.Data[i].scanDistance < 5000.0 && laser.Data[i].scanDistance > 130)
+        if (laser.Data[i].scanDistance < 3000.0 /*&& laser.Data[i].scanDistance > 130*/ && laser.Data[i].scanDistance > 640.0)
         {
             int mapX = (MAP_SIZE / 2 - 1) + std::round(x / MAP_RESOLUTION);
             int mapY = (MAP_SIZE / 2 - 1) - std::round(y / MAP_RESOLUTION);
