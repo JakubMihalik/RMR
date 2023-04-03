@@ -14,7 +14,7 @@ class PathPlanning
 {
 // Constructor and destructor
 public:
-    PathPlanning(std::ofstream& mapFile, double realWidth, double realHeight, double mapWidth, double mapHeight);
+    PathPlanning(std::ifstream& mapFile, double realWidth, double realHeight, double mapWidth, double mapHeight);
     ~PathPlanning();
 
 // Methods
@@ -28,7 +28,7 @@ public:
     double startX, startY;
     double finishX, finishY;
 private:
-    std::ofstream& mapFile;
+    std::ifstream& mapFile;
 
 };
 
