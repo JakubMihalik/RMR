@@ -6,13 +6,19 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->odData = odData;
     this->desiredX = desiredX;
     this->desiredY = desiredY;
+    this->fStopLidar = false;
 
     /*CheckPoint finish = {desiredX, desiredY};
     this->checkpoints.push(finish);*/
+
+    this->checkpoints.push({4.5, 1.75});
+    this->checkpoints.push({4.5, 0.5});
     this->checkpoints.push({4, 0.5});
     this->checkpoints.push({2.6, 0.5});
     this->checkpoints.push({2.6, 3});
     this->checkpoints.push({0, 3});
+//    this->checkpoints.push({1, -2});
+//    this->checkpoints.push({0.5, 0});
 }
 
 Controller::~Controller()
@@ -27,7 +33,7 @@ Controller::ControllerOutput Controller::regulate()
     static Controller::ControllerOutput controllerOutput;
 
     double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    double reqFwdSpeed = 500 * distance;
+    double reqFwdSpeed = 1000 * distance;
     double reqRotSpeed = 10 * ev.theta;
 
     double rotConst = PI/46;
@@ -55,7 +61,7 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.forwardSpeed = reqFwdSpeed;
     }
-    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 400);
+    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 500);
 
 
     if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
@@ -69,17 +75,22 @@ Controller::ControllerOutput Controller::regulate()
     else {
         controllerOutput.rotationSpeed = reqRotSpeed;
     }
-    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), - PI / 3);
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3);
 
-    // toto trha robot ak je tam len x!
+    // toto trha robot ak ma ist robot iba rovno!
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;
 
-    /*if (abs(ev.theta) < PI/5) {
-        robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
-    } else {
-       robot->setRotationSpeed(controllerOutput.rotationSpeed);
-    }*/
+    // Set stop lidar flag
+    if (abs(denom) > 1.0)
+    {
+        this->fStopLidar = true;
+    }
+    else
+    {
+        this->fStopLidar = false;
+    }
+
     robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
     return controllerOutput;

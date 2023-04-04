@@ -12,6 +12,7 @@
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
+
 class Controller
 {
 public:
@@ -41,6 +42,7 @@ public:
     } ControllerOutput;
 
     std::stack<CheckPoint> checkpoints;
+    std::atomic<bool> fStopLidar;
 
 /** Public methods **/
 public:
