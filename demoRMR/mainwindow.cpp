@@ -26,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-//    ipaddress="127.0.0.1";
-    ipaddress = "192.168.1.13";
+    ipaddress="127.0.0.1";
+//    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -151,7 +151,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         return 0;
     }
 
-    control->readOdometry(robotdata, &odData);
+    control->readOdometry(robotdata, &odData, controller->fStopLidar);
     controller->regulate();
 
     if(datacounter%5)
@@ -173,13 +173,13 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    DistanceMeasure dm;
+    /*DistanceMeasure dm;
     dm = objDetect->readLaserData(laserData);
     if (controller->fStopLidar)
     {
         objDetect->writeLidarMap(lidarData, odData, laserData);
         robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
-    }
+    }*/
 
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
@@ -211,8 +211,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 

@@ -8,17 +8,12 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->desiredY = desiredY;
     this->fStopLidar = false;
 
-    /*CheckPoint finish = {desiredX, desiredY};
-    this->checkpoints.push(finish);*/
-
     this->checkpoints.push({4.5, 1.75});
     this->checkpoints.push({4.5, 0.5});
     this->checkpoints.push({4, 0.5});
     this->checkpoints.push({2.6, 0.5});
     this->checkpoints.push({2.6, 3});
     this->checkpoints.push({0, 3});
-//    this->checkpoints.push({1, -2});
-//    this->checkpoints.push({0.5, 0});
 }
 
 Controller::~Controller()

@@ -15,6 +15,9 @@
  * Global variables
 **/
 #define TICK_TO_METER 0.000085292090497737556558
+#define WHEEL_BASE_METES 0.23
+#define WHEEL_BASE_MILIMETERS 230.0
+#define DEG2RAD(d) (d * 3.1415926536 / 180.0)
 
 /**
  * Structure that holds all data
@@ -53,7 +56,7 @@ public:
 
     void initControl();
 
-    OdometryData readOdometry(TKobukiData robotdata, OdometryData* data);
+    OdometryData readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry = false);
 };
 
 #endif // CONTROLLOGIC_H
