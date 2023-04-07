@@ -15,8 +15,9 @@ void ControlLogic::initControl()
 
 }
 
-OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data)
+OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
 {
+    static double prevRotation = data->initRotation;
     /******** [B] - Detect overflow ********/
     // Left Wheel
     if ((data->leftWheelTicks - robotdata.EncoderLeft) > 30000)
@@ -28,10 +29,9 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
         data->rightWheelOverflow++;
     if ((data->rightWheelTicks - robotdata.EncoderRight) < -30000)
         data->rightWheelOverflow--;
-    /******** [E] - Detect overflow ********/
-
     data->lDelta = (65535 * data->leftWheelOverflow) + robotdata.EncoderLeft - data->leftWheelTicks;
     data->rDelta = (65535 * data->rightWheelOverflow) + robotdata.EncoderRight - data->rightWheelTicks;
+    /******** [E] - Detect overflow ********/
 
     // Update distance of wheels
     data->distLeftWheel += TICK_TO_METER * data->lDelta;
@@ -43,18 +43,34 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
         rotation -= 360.0;
     else if (rotation < -180.0)
         rotation += 360.0;
-
     data->rotation = rotation;
 
     // Calculate total length
     double dLeftDist =  data->lDelta * TICK_TO_METER;
     double dRightDist = data->rDelta * TICK_TO_METER;
     data->distance = (dLeftDist + dRightDist) / 2;
-    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * 0.23); // 0.23 je rozchod kolies
+    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * WHEEL_BASE_METES);
 
-    // Calculate global position X, Y
-    data->posX += data->distance * cos(data->rotation * PI / 180.0);
-    data->posY += data->distance * sin(data->rotation * PI / 180.0);
+    if (useRotationOdometry)
+    {
+        /** Odometry while rotating **/
+        double wheelRatio = (WHEEL_BASE_METES * (dRightDist + dLeftDist)) / (2 * (dRightDist - dLeftDist));
+        double sinDelta = sin(DEG2RAD(rotation)) - sin(DEG2RAD(prevRotation));
+        double cosDelta = cos(DEG2RAD(rotation)) - cos(DEG2RAD(prevRotation));
+        data->posX += wheelRatio * sinDelta;
+        data->posY -= wheelRatio * cosDelta;
+        /** Odometry while rotating **/
+    }
+    else
+    {
+        /** Odometry for forward movement **/
+        data->posX += data->distance * cos(DEG2RAD(data->rotation));
+        data->posY += data->distance * sin(DEG2RAD(data->rotation));
+        /** Odometry for forward movement **/
+    }
+
+    // Save previous rotation
+    prevRotation = rotation;
 
     // Save new wheels encoder values
     data->leftWheelTicks = robotdata.EncoderLeft;
@@ -63,7 +79,6 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     // Reset flags
     data->rightWheelOverflow = 0;
     data->leftWheelOverflow = 0;
-
 
     return *data;
 }

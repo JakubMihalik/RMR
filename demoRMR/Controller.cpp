@@ -7,9 +7,7 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->desiredX = desiredX;
     this->desiredY = desiredY;
     this->fStopLidar = false;
-
-    /*CheckPoint finish = {desiredX, desiredY};
-    this->checkpoints.push(finish);*/
+    this->fRotating = false;
 
     this->checkpoints.push({4.5, 1.75});
     this->checkpoints.push({4.5, 0.5});
@@ -17,8 +15,6 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->checkpoints.push({2.6, 0.5});
     this->checkpoints.push({2.6, 3});
     this->checkpoints.push({0, 3});
-//    this->checkpoints.push({1, -2});
-//    this->checkpoints.push({0.5, 0});
 }
 
 Controller::~Controller()
@@ -77,19 +73,14 @@ Controller::ControllerOutput Controller::regulate()
     }
     controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3);
 
-    // toto trha robot ak ma ist robot iba rovno!
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;
 
     // Set stop lidar flag
-    if (abs(denom) > 1.0)
-    {
-        this->fStopLidar = true;
-    }
-    else
-    {
-        this->fStopLidar = false;
-    }
+    this->fStopLidar = abs(denom) > 1.0;
+
+    // Set rotation flag
+    this->fRotating = abs(controllerOutput.rotationSpeed) >= 0.01;
 
     robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 
