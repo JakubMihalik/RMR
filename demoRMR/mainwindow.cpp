@@ -154,6 +154,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     control->readOdometry(robotdata, &odData, controller->fStopLidar);
     controller->regulate();
 
+    robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+
     if(datacounter%5)
     {
         emit uiValuesChanged(odData.posX, odData.posY, odData.rotation);
@@ -173,14 +175,12 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    /*DistanceMeasure dm;
+    DistanceMeasure dm;
     dm = objDetect->readLaserData(laserData);
-    if (controller->fStopLidar)
+    if (!controller->fStopLidar)
     {
         objDetect->writeLidarMap(lidarData, odData, laserData);
-        robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
-    }*/
-
+    }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 

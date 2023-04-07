@@ -43,6 +43,7 @@ public:
 
     std::stack<CheckPoint> checkpoints;
     std::atomic<bool> fStopLidar;
+    std::atomic<bool> fRotating;
 
 /** Public methods **/
 public:

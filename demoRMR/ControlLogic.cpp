@@ -17,8 +17,6 @@ void ControlLogic::initControl()
 
 OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
 {
-    static double lRigh = 0.0;
-    static double lLeft = 0.0;
     static double prevRotation = data->initRotation;
     /******** [B] - Detect overflow ********/
     // Left Wheel
@@ -38,8 +36,6 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     // Update distance of wheels
     data->distLeftWheel += TICK_TO_METER * data->lDelta;
     data->distRightWheel += TICK_TO_METER * data->rDelta;
-    lRigh += data->rDelta * TICK_TO_METER;
-    lLeft += data->lDelta * TICK_TO_METER;
 
     // Update rotation
     double rotation = fmod((robotdata.GyroAngle / 100.0 - data->initRotation), 360.0);
@@ -53,12 +49,12 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     double dLeftDist =  data->lDelta * TICK_TO_METER;
     double dRightDist = data->rDelta * TICK_TO_METER;
     data->distance = (dLeftDist + dRightDist) / 2;
-    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * 0.23); // 0.23 je rozchod kolies
+    data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * WHEEL_BASE_METES);
 
     if (useRotationOdometry)
     {
         /** Odometry while rotating **/
-        double wheelRatio = (WHEEL_BASE_METES * (lRigh + lLeft)) / (2 * (lRigh - lLeft));
+        double wheelRatio = (WHEEL_BASE_METES * (dRightDist + dLeftDist)) / (2 * (dRightDist - dLeftDist));
         double sinDelta = sin(DEG2RAD(rotation)) - sin(DEG2RAD(prevRotation));
         double cosDelta = cos(DEG2RAD(rotation)) - cos(DEG2RAD(prevRotation));
         data->posX += wheelRatio * sinDelta;
@@ -68,8 +64,8 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     else
     {
         /** Odometry for forward movement **/
-        data->posX += data->distance * cos(data->rotation * PI / 180.0);
-        data->posY += data->distance * sin(data->rotation * PI / 180.0);
+        data->posX += data->distance * cos(DEG2RAD(data->rotation));
+        data->posY += data->distance * sin(DEG2RAD(data->rotation));
         /** Odometry for forward movement **/
     }
 
