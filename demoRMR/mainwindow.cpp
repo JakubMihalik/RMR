@@ -4,14 +4,18 @@
 #include <math.h>
 
 /** Custom variables -> move to interface later **/
-#include "ControlLogic.h"
+#include "RobotLogic.h"
 #include "Controller.h"
 #include "ObjectDetection.h"
+#include "BugMovement.h"
 #include <fstream>
 #include <iostream>
 
-ControlLogic* control = new ControlLogic();
+RobotLogic* robotLogic = new RobotLogic();
 ObjectDetection* objDetect = new ObjectDetection();
+BugMovement* bugMovement;
+std::vector<std::pair<double, double>> processedLidarData;
+std::vector<std::pair<double, double>> processedLidarDataXY;
 OdometryData odData = {0};
 Controller* controller;
 bool initialStart = true;
@@ -41,7 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Constructor objects
-    controller = new Controller(&robot, &odData, 0, 3);
+    controller = new Controller(robotLogic, &robot, &odData, 0, 3);
+    bugMovement = new BugMovement(robotLogic, controller, &odData);
+
     robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
     if (!robotPositions.is_open())
     {
@@ -74,7 +80,7 @@ MainWindow::~MainWindow()
     while (map2D.is_open() || robotPositions.is_open() || lidarData.is_open());
 
     delete ui;
-    delete control;
+    delete robotLogic;
     delete objDetect;
 
     std::cout << "All closed and destroyed\n\n";
@@ -151,8 +157,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         return 0;
     }
 
-    control->readOdometry(robotdata, &odData, controller->fStopLidar);
-    controller->regulate();
+    robotLogic->readOdometry(robotdata, &odData, controller->fStopLidar);
+    bugMovement->initAlgorithm(processedLidarData, processedLidarDataXY);
 
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
 
@@ -174,12 +180,11 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
-    //Laser data processing
-    DistanceMeasure dm;
-    dm = objDetect->readLaserData(laserData);
     if (!controller->fStopLidar)
     {
         objDetect->writeLidarMap(lidarData, odData, laserData);
+        processedLidarData = objDetect->readLaserData(laserData);
+        processedLidarDataXY = objDetect->readLaserDataXY(laserData, odData);
     }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing

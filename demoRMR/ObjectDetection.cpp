@@ -13,23 +13,28 @@ ObjectDetection::~ObjectDetection()
 }
 
 
-DistanceMeasure ObjectDetection::readLaserData(LaserMeasurement laser)
+std::vector<std::pair<double, double>> ObjectDetection:: readLaserData(LaserMeasurement laser)
 {
-    int nScans = laser.numberOfScans;
-    double min = 1000000;
-    int indx = -1;
-
-    for (int i{0}; i < nScans; i++)
-    {
-        if (laser.Data[i].scanDistance < min && laser.Data[i].scanDistance >= 0)
-        {
-            min = laser.Data[i].scanDistance;
-            indx = i;
-        }
+    std::vector<std::pair<double, double>> lidarData;
+    for (int i = 0; i < laser.numberOfScans; i++) {
+        lidarData.emplace_back(laser.Data[i].scanDistance, laser.Data[i].scanAngle);
     }
 
-    DistanceMeasure ret = {laser.Data[indx].scanAngle, laser.Data[indx].scanDistance};
-    return ret;
+    return lidarData;
+}
+
+std::vector<std::pair<double, double>> ObjectDetection:: readLaserDataXY(LaserMeasurement laser, OdometryData data)
+{
+    std::vector<std::pair<double, double>> lidarDataXY;
+    for (int i = 0; i < laser.numberOfScans; i++) {
+        double robotAngleRad = data.rotation * PI / 180.0;
+        double lidarAngleRad = (360.0 - laser.Data[i].scanAngle) * PI / 180.0;
+        double x = data.posX + (laser.Data[i].scanDistance / 1000.0) * cos(lidarAngleRad + robotAngleRad);
+        double y = data.posY + (laser.Data[i].scanDistance / 1000.0) * sin(lidarAngleRad + robotAngleRad);
+        lidarDataXY.emplace_back(x, y);
+    }
+
+    return lidarDataXY;
 }
 
 void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, LaserMeasurement laser)

@@ -1,21 +1,75 @@
-#include "ControlLogic.h"
+#include "RobotLogic.h"
 
-ControlLogic::ControlLogic()
+RobotLogic::RobotLogic()
 {
 
 }
 
-ControlLogic::~ControlLogic()
+RobotLogic::~RobotLogic()
 {
 
 }
 
-void ControlLogic::initControl()
+void RobotLogic::initControl()
 {
 
 }
 
-OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
+bool RobotLogic::obstacleInPath(const std::vector<std::pair<double, double>>& lidarData, float thresholdDistance, float thresholdAngle)
+{
+    for (const auto& point : lidarData) {
+        float distance = point.first;
+        float angle = point.second;
+
+        if (abs(angle) <= thresholdAngle && distance < thresholdDistance) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+NearestWall RobotLogic::findNearestWall(const std::vector<std::pair<double, double>>& lidarData) {
+    float minDistance = std::numeric_limits<float>::max();
+    float nearestWallAngle = 0.0;
+
+    for (const auto& point : lidarData) {
+        float distance = point.first;
+        float angle = point.second;
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestWallAngle = angle;
+        }
+    }
+
+    return {minDistance / 1000, nearestWallAngle};
+}
+
+
+bool RobotLogic::isPathToGoalFree(const std::vector<std::pair<double, double>>& laserData, double goalX, double goalY, float obstacleThreshold)
+{
+    for (const auto& point : laserData)
+    {
+        double distance = point.first;
+        double angle = point.second;
+
+        double pointX = distance * cos(angle);
+        double pointY = distance * sin(angle);
+
+        double goalPointDist = sqrt(pow(goalX - pointX, 2) + pow(goalY - pointY, 2));
+
+        if (goalPointDist < obstacleThreshold)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+OdometryData RobotLogic::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
 {
     static double prevRotation = data->initRotation;
     /******** [B] - Detect overflow ********/

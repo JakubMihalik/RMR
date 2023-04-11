@@ -58,16 +58,19 @@ win32 {
 
 
 SOURCES += main.cpp\
-        ControlLogic.cpp \
+        Bug2.cpp \
+        BugMovement.cpp \
         Controller.cpp \
         ObjectDetection.cpp \
         PathPlanning.cpp \
+        RobotLogic.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    ControlLogic.h \
+    BugMovement.h \
     Controller.h \
     ObjectDetection.h \
-    PathPlanning.h
+    PathPlanning.h \
+    RobotLogic.h
 
 FORMS    += mainwindow.ui

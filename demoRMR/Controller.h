@@ -5,7 +5,7 @@
 
 /** Dependant includes **/
 #include "robot.h"
-#include "ControlLogic.h"
+#include "RobotLogic.h"
 #include <cmath>
 #include <queue>
 #include <stack>
@@ -16,12 +16,14 @@
 class Controller
 {
 public:
-    Controller(Robot*, OdometryData*, double desiredX, double desiredY);
+    Controller(RobotLogic*, Robot*, OdometryData*, double desiredX, double desiredY);
     ~Controller();
 
 private:
+    RobotLogic* robotLogic;
     Robot* robot;
     OdometryData* odData;
+    LaserMeasurement* laserData;
     double desiredX;
     double desiredY;
 
@@ -29,8 +31,7 @@ private:
 public:
     typedef struct
     {
-        double x;
-        double y;
+        double distance;
         double theta;
     } ErrorValue;
 
@@ -44,11 +45,16 @@ public:
     std::stack<CheckPoint> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
+    std::atomic<bool> closeToWall;
+
+    NearestWall nearestWall;
+    ErrorValue error;
 
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
     ControllerOutput regulate();
+    double distance(double x1, double y1, double x2, double y2);
 };
 
 #endif // CONTROLLER_H

@@ -4,8 +4,7 @@
 #define DEBUG
 
 // Includes
-#include "ControlLogic.h"
-#include "ObjectDetection.h"
+#include "RobotLogic.h"
 #include <iostream>
 #include <fstream>
 #include <queue>

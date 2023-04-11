@@ -1,5 +1,5 @@
-#ifndef CONTROLLOGIC_H
-#define CONTROLLOGIC_H
+#ifndef ROBOTLOGIC_H
+#define ROBOTLOGIC_H
 
 /**
  * Custom class header that contains
@@ -18,6 +18,14 @@
 #define WHEEL_BASE_METES 0.23
 #define WHEEL_BASE_MILIMETERS 230.0
 #define DEG2RAD(d) (d * 3.1415926536 / 180.0)
+
+/**
+ * @brief The RobotState enum
+ */
+enum RobotState {
+    MOVE_TO_GOAL,
+    FOLLOW_WALL
+};
 
 /**
  * Structure that holds all data
@@ -48,15 +56,31 @@ typedef struct {
     double y;
 } CheckPoint;
 
-class ControlLogic
+typedef struct
+{
+   float distance;
+   float angle;
+} NearestWall;
+
+typedef struct
+{
+   float x;
+   float y;
+} NearestWallXY;
+
+class RobotLogic
 {
 public:
-    ControlLogic();
-    ~ControlLogic();
+    RobotLogic();
+    ~RobotLogic();
+    bool obstacleInPath(const std::vector<std::pair<double, double>>& lidarData, float thresholdDistance, float thresholdAngle);
+    NearestWall findNearestWall(const std::vector<std::pair<double, double>>& lidarData);
+    NearestWallXY findNearestWallXY(const std::vector<std::pair<double, double>>& lidarDataXY);
 
+    bool RobotLogic::isPathToGoalFree(const std::vector<std::pair<double, double>>& laserData, double goalX, double goalY, float obstacleThreshold);
     void initControl();
-
     OdometryData readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry = false);
+    RobotState robotState = MOVE_TO_GOAL;
 };
 
-#endif // CONTROLLOGIC_H
+#endif // ROBOTLOGIC_H

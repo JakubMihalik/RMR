@@ -38,13 +38,14 @@ typedef struct
     int scanQuality;
     double scanAngle;
     double scanDistance;
-}LaserData;
+} LaserData;
 
 typedef struct
 {
     int numberOfScans;
     LaserData Data[1000];
-}LaserMeasurement;
+} LaserMeasurement;
+
 class rplidar
 {
 public:

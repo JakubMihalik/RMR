@@ -2,7 +2,7 @@
 #define OBJECTDETECTION_H
 
 // Depandant includes
-#include "ControlLogic.h"
+#include "RobotLogic.h"
 #include "rplidar.h"
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,8 @@ public:
     int map2D[MAP_SIZE][MAP_SIZE] = {{0}};
 
 public:
-    DistanceMeasure readLaserData(LaserMeasurement laser);
+    std::vector<std::pair<double, double>> readLaserData(LaserMeasurement laser);
+    std::vector<std::pair<double, double>> ObjectDetection:: readLaserDataXY(LaserMeasurement laser, OdometryData data);
     void writeLidarMap(std::ofstream& file, OdometryData data, LaserMeasurement laser);
     void avoidObstacles(LaserMeasurement laser, OdometryData robotData, std::stack<CheckPoint>& checkpoints);
     void writeMap2D(std::ofstream& file);
