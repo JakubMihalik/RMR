@@ -1,4 +1,4 @@
-#include "ControlLogic.h"
+    #include "ControlLogic.h"
 
 ControlLogic::ControlLogic()
 {
@@ -50,13 +50,14 @@ OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* dat
     double dRightDist = data->rDelta * TICK_TO_METER;
     data->distance = (dLeftDist + dRightDist) / 2;
     data->deltaTheta = (data->distRightWheel - data->distLeftWheel) / (2 * WHEEL_BASE_METES);
-
-    if (useRotationOdometry)
+    double denom = (2 * (dRightDist - dLeftDist));
+    if (useRotationOdometry && denom !=0)
     {
         /** Odometry while rotating **/
-        double wheelRatio = (WHEEL_BASE_METES * (dRightDist + dLeftDist)) / (2 * (dRightDist - dLeftDist));
+        double wheelRatio = (WHEEL_BASE_METES * (dRightDist + dLeftDist)) / denom;
         double sinDelta = sin(DEG2RAD(rotation)) - sin(DEG2RAD(prevRotation));
         double cosDelta = cos(DEG2RAD(rotation)) - cos(DEG2RAD(prevRotation));
+
         data->posX += wheelRatio * sinDelta;
         data->posY -= wheelRatio * cosDelta;
         /** Odometry while rotating **/
