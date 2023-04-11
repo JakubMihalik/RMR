@@ -1,21 +1,21 @@
-    #include "ControlLogic.h"
+#include "Odometry.h"
 
-ControlLogic::ControlLogic()
+Odometry::Odometry()
 {
 
 }
 
-ControlLogic::~ControlLogic()
+Odometry::~Odometry()
 {
 
 }
 
-void ControlLogic::initControl()
+void Odometry::initControl()
 {
 
 }
 
-OdometryData ControlLogic::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
+OdometryData Odometry::readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry)
 {
     static double prevRotation = data->initRotation;
     /******** [B] - Detect overflow ********/

@@ -1,5 +1,5 @@
-#ifndef CONTROLLOGIC_H
-#define CONTROLLOGIC_H
+#ifndef ODOMETRY_H
+#define ODOMETRY_H
 
 /**
  * Custom class header that contains
@@ -48,15 +48,15 @@ typedef struct {
     double y;
 } CheckPoint;
 
-class ControlLogic
+class Odometry
 {
 public:
-    ControlLogic();
-    ~ControlLogic();
+    Odometry();
+    ~Odometry();
 
     void initControl();
 
     OdometryData readOdometry(TKobukiData robotdata, OdometryData* data, bool useRotationOdometry = false);
 };
 
-#endif // CONTROLLOGIC_H
+#endif // ODOMETRY_H

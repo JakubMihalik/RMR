@@ -2,7 +2,7 @@
 #define OBJECTDETECTION_H
 
 // Depandant includes
-#include "ControlLogic.h"
+#include "Odometry.h"
 #include "rplidar.h"
 #include <iostream>
 #include <fstream>

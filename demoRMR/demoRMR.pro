@@ -58,16 +58,16 @@ win32 {
 
 
 SOURCES += main.cpp\
-        ControlLogic.cpp \
         Controller.cpp \
         ObjectDetection.cpp \
+        Odometry.cpp \
         PathPlanning.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    ControlLogic.h \
     Controller.h \
     ObjectDetection.h \
+    Odometry.h \
     PathPlanning.h
 
 FORMS    += mainwindow.ui

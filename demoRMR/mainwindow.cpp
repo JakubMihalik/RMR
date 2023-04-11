@@ -4,13 +4,13 @@
 #include <math.h>
 
 /** Custom variables -> move to interface later **/
-#include "ControlLogic.h"
+#include "Odometry.h"
 #include "Controller.h"
 #include "ObjectDetection.h"
 #include <fstream>
 #include <iostream>
 
-ControlLogic* control = new ControlLogic();
+Odometry* control = new Odometry();
 ObjectDetection* objDetect = new ObjectDetection();
 OdometryData odData = {0};
 Controller* controller;
