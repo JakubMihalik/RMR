@@ -9,12 +9,20 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->fStopLidar = false;
     this->fRotating = false;
 
-    this->checkpoints.push({4.5, 1.75});
-    this->checkpoints.push({4.5, 0.5});
-    this->checkpoints.push({4, 0.5});
-    this->checkpoints.push({2.6, 0.5});
-    this->checkpoints.push({2.6, 3});
     this->checkpoints.push({0, 3});
+    this->checkpoints.push({1, 3});
+    this->checkpoints.push({1, 1.45});
+    this->checkpoints.push({2.55,1.45});
+    this->checkpoints.push({2.55,0.75});
+    this->checkpoints.push({4.65,0.75});
+    this->checkpoints.push({4.65,1.75});
+    this->checkpoints.push({4.5,1.75});
+
+//    this->checkpoints.push({0, 3});
+//    this->checkpoints.push({2.6, 3});
+//    this->checkpoints.push({2.6, 0.5});
+//    this->checkpoints.push({4.5, 0.5});
+//    this->checkpoints.push({4.5, 1.8});
 }
 
 Controller::~Controller()
@@ -89,12 +97,12 @@ Controller::ControllerOutput Controller::regulate()
 
 Controller::ErrorValue Controller::calculateErrors()
 {
-    double eX = abs(this->checkpoints.top().x - this->odData->posX);
-    double eY = abs(this->checkpoints.top().y - this->odData->posY);
+    double eX = abs(this->checkpoints.front().x - this->odData->posX);
+    double eY = abs(this->checkpoints.front().y - this->odData->posY);
 
     // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->checkpoints.top().y - this->odData->posY,
-                          this->checkpoints.top().x - this->odData->posX) - this->odData->rotation * PI / 180;
+    double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
+                          this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {

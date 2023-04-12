@@ -8,7 +8,6 @@
 #include "Odometry.h"
 #include <cmath>
 #include <queue>
-#include <stack>
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
@@ -41,7 +40,7 @@ public:
         double reached;
     } ControllerOutput;
 
-    std::stack<CheckPoint> checkpoints;
+    std::queue<CheckPoint> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
 
