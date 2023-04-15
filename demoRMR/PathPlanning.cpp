@@ -162,7 +162,19 @@ std::queue<Point> PathPlanning::createCheckpoints(double startX, double startY, 
 		free(file2map);
 	}
 
-	scaleObstacles();
+
+#pragma region Desired locations calculations
+    this->xStartIndex = std::round((this->startX - this->mapOriginX) / this->mapResolution);
+    this->yStartIndex = this->height - std::round((this->startY - this->mapOriginY) / this->mapResolution);
+
+    this->xFinishIndex = std::round((this->finishX - this->mapOriginX) / this->mapResolution);
+    this->yFinishIndex = this->height - std::round((this->finishY - this->mapOriginY) / this->mapResolution);
+
+    this->occupancyMap[this->yStartIndex][this->xStartIndex] = START;
+    this->occupancyMap[this->yFinishIndex][this->xFinishIndex] = FINISH;
+#pragma endregion
+
+    scaleObstacles();
 	floodFill();
     planPath(planPoints);
 	writeData();
@@ -297,18 +309,6 @@ void PathPlanning::scaleObstacles()
 
 void PathPlanning::floodFill()
 {
-#pragma region Initial calculations
-	this->xStartIndex = std::round((this->startX - this->mapOriginX) / this->mapResolution);
-	this->yStartIndex = this->height - std::round((this->startY - this->mapOriginY) / this->mapResolution);
-
-	this->xFinishIndex = std::round((this->finishX - this->mapOriginX) / this->mapResolution);
-	this->yFinishIndex = this->height - std::round((this->finishY - this->mapOriginY) / this->mapResolution);
-
-    std::cout << "Finish position: " << this->finishX << ", " << this->finishY << std::endl;
-
-	this->occupancyMap[this->yStartIndex][this->xStartIndex] = START;
-#pragma endregion
-
 	floodFillQueue(this->xFinishIndex, this->yFinishIndex);
 }
 
