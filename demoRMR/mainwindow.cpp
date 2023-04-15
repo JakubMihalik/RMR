@@ -9,6 +9,9 @@
 #include "ObjectDetection.h"
 #include <fstream>
 #include <iostream>
+#include "PathPlanning.h"
+
+#define ENABLE_CHECKPOINTS
 
 Odometry* control = new Odometry();
 ObjectDetection* objDetect = new ObjectDetection();
@@ -18,6 +21,7 @@ bool initialStart = true;
 ofstream robotPositions;
 ofstream lidarData;
 ofstream map2D;
+PathPlanning* pathPlanning;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -42,26 +46,44 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
-    robotPositions.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\robotPositions.csv");
+    robotPositions.open("C:\\RMR_Files\\robotPositions.csv");
     if (!robotPositions.is_open())
     {
         std::cout << "File robotPositions cannot be opened\n";
         return;
     }
 
-    lidarData.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\lidarMeasures.csv");
+    lidarData.open("C:\\RMR_Files\\lidarMeasures.csv");
     if (!lidarData.is_open())
     {
         std::cout << "File lidarData cannot be opened\n";
         return;
     }
 
-    map2D.open("C:\\Users\\jakub\\Documents\\FEI\\RMR\\Files\\map2D.txt");
+    map2D.open("C:\\RMR_Files\\map2D.txt");
     if (!map2D.is_open())
     {
         std::cout << "File map2D cannot be opened\n";
         return;
     }
+
+#ifdef ENABLE_CHECKPOINTS
+    // Path planning
+    std::ifstream map("C:\\RMR_Files\\static\\map2D.txt");
+    if (!map.is_open())
+    {
+        std::cerr << "Cannot open map file\n";
+        map.close();
+        return;
+    }
+    pathPlanning = new PathPlanning(map, 6.0, 6.0, 0.05, -0.5, -0.5);
+    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 4.7, 3.25);
+    std::cout << "Path planned whith " << points.size() << " checkpoints\n";
+    map.close();
+
+    // Set checkpoints to Controller object
+    controller->setCheckpoints(points);
+#endif
 }
 
 MainWindow::~MainWindow()
