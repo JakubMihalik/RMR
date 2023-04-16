@@ -34,7 +34,7 @@ Controller::ControllerOutput Controller::regulate()
 
     double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
     double reqFwdSpeed = 1000 * distance;
-    double reqRotSpeed = 10 * ev.theta;
+    double reqRotSpeed = 5 * ev.theta;
 
     double rotConst = PI / 32;
     double fwdConst = 5;
