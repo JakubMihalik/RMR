@@ -11,8 +11,6 @@
 #include <iostream>
 #include "PathPlanning.h"
 
-#define ENABLE_CHECKPOINTS
-
 Odometry* control = new Odometry();
 ObjectDetection* objDetect = new ObjectDetection();
 OdometryData odData = {0};

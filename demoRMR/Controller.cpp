@@ -8,6 +8,17 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->desiredY = desiredY;
     this->fStopLidar = false;
     this->fRotating = false;
+
+#ifndef ENABLE_CHECKPOINTS
+    this->checkpoints.push({0, 3});
+    this->checkpoints.push({2.7, 3});
+    this->checkpoints.push({2.7, 0.4});
+    this->checkpoints.push({4.75, 0.4});
+    this->checkpoints.push({4.75, 1.8});
+    std::cout << "Default checkpoints used. No dynamic calculation enabled...\n";
+#else
+    std::cout << "Calculating checkpoints\n";
+#endif
 }
 
 Controller::~Controller()
@@ -25,7 +36,7 @@ Controller::ControllerOutput Controller::regulate()
     double reqFwdSpeed = 1000 * distance;
     double reqRotSpeed = 10 * ev.theta;
 
-    double rotConst = PI/46;
+    double rotConst = PI / 32;
     double fwdConst = 5;
 
 
@@ -57,11 +68,16 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.rotationSpeed -= rotConst;
     }
-    else if (reqFwdSpeed - controllerOutput.forwardSpeed > rotConst)
+    /*else if (reqFwdSpeed - controllerOutput.forwardSpeed > rotConst)
     {
         controllerOutput.rotationSpeed += rotConst;
+    }*/
+    else if (reqRotSpeed - controllerOutput.rotationSpeed < -rotConst)
+    {
+        controllerOutput.rotationSpeed -= rotConst;
     }
-    else {
+    else
+    {
         controllerOutput.rotationSpeed = reqRotSpeed;
     }
     controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3);
