@@ -68,13 +68,9 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.rotationSpeed -= rotConst;
     }
-    /*else if (reqFwdSpeed - controllerOutput.forwardSpeed > rotConst)
+    else if (controllerOutput.rotationSpeed - reqRotSpeed < -rotConst)
     {
         controllerOutput.rotationSpeed += rotConst;
-    }*/
-    else if (reqRotSpeed - controllerOutput.rotationSpeed < -rotConst)
-    {
-        controllerOutput.rotationSpeed -= rotConst;
     }
     else
     {
