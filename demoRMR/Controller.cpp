@@ -61,7 +61,7 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.forwardSpeed = reqFwdSpeed;
     }
-    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 500);
+    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 750);
 
 
     if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
@@ -76,7 +76,7 @@ Controller::ControllerOutput Controller::regulate()
     {
         controllerOutput.rotationSpeed = reqRotSpeed;
     }
-    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 3), -PI / 3);
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 2), -PI / 2);
 
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;

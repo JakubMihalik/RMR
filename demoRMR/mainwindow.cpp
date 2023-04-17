@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-    ipaddress="127.0.0.1";
-//    ipaddress = "192.168.1.13";
+//    ipaddress="127.0.0.1";
+    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
