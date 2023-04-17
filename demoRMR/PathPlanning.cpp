@@ -174,6 +174,7 @@ std::queue<Point> PathPlanning::createCheckpoints(double startX, double startY, 
     this->occupancyMap[this->yFinishIndex][this->xFinishIndex] = FINISH;
 #pragma endregion
 
+    // TODO: Spravit filter na mapu
     scaleObstacles();
 	floodFill();
     planPath(planPoints);

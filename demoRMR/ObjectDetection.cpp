@@ -41,14 +41,13 @@ void ObjectDetection::writeLidarMap(std::ofstream& file, OdometryData data, Lase
         double x = data.posX + (laser.Data[i].scanDistance / 1000.0) * cos(lidarAngleRad + robotAngleRad);
         double y = data.posY + (laser.Data[i].scanDistance / 1000.0) * sin(lidarAngleRad + robotAngleRad);
 
-        file << x << "," << y << "\n";
-
         // Binary map
-        if ((laser.Data[i].scanDistance < 3000.0 && laser.Data[i].scanDistance > 130) && (laser.Data[i].scanDistance < 640.0 || laser.Data[i].scanDistance > 700.0))
+        if ((laser.Data[i].scanDistance < 3000.0 && laser.Data[i].scanDistance > 130) && (laser.Data[i].scanDistance < 620.0 || laser.Data[i].scanDistance > 720.0))
         {
             int mapX = (MAP_SIZE / 2 - 1) + std::round(x / MAP_RESOLUTION);
             int mapY = (MAP_SIZE / 2 - 1) - std::round(y / MAP_RESOLUTION);
             this->map2D[mapY][mapX] = 1;
+            file << x << "," << y << "\n";
         }
     }
 }

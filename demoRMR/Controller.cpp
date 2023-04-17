@@ -82,7 +82,7 @@ Controller::ControllerOutput Controller::regulate()
     double radius = controllerOutput.forwardSpeed / denom;
 
     // Set stop lidar flag
-    this->fStopLidar = abs(denom) > 1.0;
+    this->fStopLidar = abs(denom) > 1.0; // Toto osetrit nie na radar ale na to co robot robi
 
     // Set rotation flag
     this->fRotating = abs(controllerOutput.rotationSpeed) >= 0.01;
