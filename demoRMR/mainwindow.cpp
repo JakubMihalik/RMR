@@ -1,7 +1,9 @@
 #include "mainwindow.h"
+#include "BugAlgorithm.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
+#include "BugAlgorithm.h"
 
 /** Custom variables -> move to interface later **/
 #include "Odometry.h"
@@ -17,6 +19,7 @@ Odometry* control = new Odometry();
 ObjectDetection* objDetect = new ObjectDetection();
 OdometryData odData = {0};
 Controller* controller;
+BugAlgorithm* bugAlgorithm;
 bool initialStart = true;
 ofstream robotPositions;
 ofstream lidarData;
@@ -30,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-    ipaddress="127.0.0.1";
-//    ipaddress = "192.168.1.13";
+//    ipaddress="127.0.0.1";
+    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -167,14 +170,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         odData.posY = 0;
         odData.initRotation = robotdata.GyroAngle / 100.0;
         odData.rotation = robotdata.GyroAngle / 100.0;
-
+        bugAlgorithm = new BugAlgorithm(controller, &odData, &robot);
         emit uiValuesChanged(0, 0, odData.rotation);
         initialStart = false;
         return 0;
     }
 
     control->readOdometry(robotdata, &odData, controller->fStopLidar);
-    controller->regulate();
+//    controller->regulate();
+    bugAlgorithm->controlRobot();
 
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
 
@@ -190,8 +194,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
-
-
     memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
@@ -201,6 +203,10 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     dm = objDetect->readLaserData(laserData);
     if (!controller->fStopLidar)
     {
+        if (bugAlgorithm != NULL)
+        {
+            bugAlgorithm->setLaserData(laserData);
+        }
         objDetect->writeLidarMap(lidarData, odData, laserData);
     }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);

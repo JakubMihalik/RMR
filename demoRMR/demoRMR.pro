@@ -58,6 +58,7 @@ win32 {
 
 
 SOURCES += main.cpp\
+        BugAlgorithm.cpp \
         Controller.cpp \
         ObjectDetection.cpp \
         Odometry.cpp \
@@ -65,6 +66,7 @@ SOURCES += main.cpp\
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
+    BugAlgorithm.h \
     Controller.h \
     ObjectDetection.h \
     Odometry.h \
