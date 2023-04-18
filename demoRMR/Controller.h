@@ -29,8 +29,7 @@ private:
 public:
     typedef struct
     {
-        double x;
-        double y;
+        double distance;
         double theta;
     } ErrorValue;
 
@@ -47,8 +46,8 @@ public:
 
 /** Public methods **/
 public:
-    ErrorValue calculateErrors();
-    ControllerOutput regulate();
+    Controller::ErrorValue calculateErrors(Point point, double angleBias, double distBias);
+    Controller::ControllerOutput regulate(Controller::ErrorValue ev);
     void setCheckpoints(std::queue<Point>& checkpoints);
 };
 

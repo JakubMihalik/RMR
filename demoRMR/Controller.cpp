@@ -25,24 +25,25 @@ Controller::~Controller()
     delete this->robot;
     delete this->odData;
 }
+//Controller::ErrorValue ev = Controller::calculateErrors({this->checkpoints.front().x, this->checkpoints.front().y});
 
-Controller::ControllerOutput Controller::regulate()
+
+Controller::ControllerOutput Controller::regulate(Controller::ErrorValue ev)
 {
-    Controller::ErrorValue ev = Controller::calculateErrors();
     static Controller::ControllerOutput controllerOutput;
+    std::cout<<"Error theta: " << ev.theta << " distance: " << ev.distance << std::endl;
 
-    double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    double reqFwdSpeed = 1000 * distance;
+    double reqFwdSpeed = 1000 * ev.distance;
     double reqRotSpeed = 10 * ev.theta;
 
     double rotConst = PI/46;
     double fwdConst = 5;
 
-
     // Je v v pozadovanom priestore
-    if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
+    if (abs(ev.distance) < 0.03 && abs(ev.theta) < 0.03)
     {
         robot->setTranslationSpeed(0);
+        robot->setRotationSpeed(0);
 
         if (this->checkpoints.size() > 1)
         {
@@ -90,20 +91,22 @@ Controller::ControllerOutput Controller::regulate()
     return controllerOutput;
 }
 
-Controller::ErrorValue Controller::calculateErrors()
+Controller::ErrorValue Controller::calculateErrors(Point point, double angleBias, double distanceBias)
 {
-    double eX = abs(this->checkpoints.front().x - this->odData->posX);
-    double eY = abs(this->checkpoints.front().y - this->odData->posY);
+    double eX = abs(point.x - this->odData->posX);
+    double eY = abs(point.y - this->odData->posY);
 
     // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
-                          this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
+    double eTheta = atan2(point.y - this->odData->posY,
+                          point.x - this->odData->posX) - this->odData->rotation * PI / 180 + angleBias;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {
         eTheta += 2*PI;
     }
-    Controller::ErrorValue e = {eX, eY, eTheta};
+    double distance = sqrt(pow(eX, 2) + pow(eY, 2)) - distanceBias;
+
+    Controller::ErrorValue e = {distance, eTheta};
     return e;
 }
 
