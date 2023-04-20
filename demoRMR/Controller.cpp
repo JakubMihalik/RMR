@@ -9,6 +9,14 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->fStopLidar = false;
     this->fRotating = false;
 
+    this->gainForward = 2000;
+    this->gainRotation = 9;
+    this->rotConst = PI / 4;
+    this->fwdConst = 15;
+    this->forwardLimit = 1500;
+    this->rotationLimit = PI / 2;
+    this->accuracy = 0.03;
+
 #ifndef ENABLE_CHECKPOINTS
     this->checkpoints.push({0, 3});
     this->checkpoints.push({2.7, 3});
@@ -33,15 +41,11 @@ Controller::ControllerOutput Controller::regulate()
     static Controller::ControllerOutput controllerOutput;
 
     double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
-    double reqFwdSpeed = 1000 * distance;
-    double reqRotSpeed = 5 * ev.theta;
-
-    double rotConst = PI / 32;
-    double fwdConst = 5;
-
+    double reqFwdSpeed = this->gainForward * distance;
+    double reqRotSpeed = this->gainRotation * ev.theta;
 
     // Je v v pozadovanom priestore
-    if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
+    if (abs(ev.x) < this->accuracy && abs(ev.y) < this->accuracy)
     {
         robot->setTranslationSpeed(0);
 
@@ -49,34 +53,44 @@ Controller::ControllerOutput Controller::regulate()
         {
             this->checkpoints.pop();
         }
+        if (this->checkpoints.size() <= 1)
+        {
+            this->gainForward = 1000;
+            this->gainRotation = 5;
+            this->rotConst = PI / 32;
+            this->fwdConst = 5;
+            this->forwardLimit = 500;
+            this->rotationLimit = PI / 3;
+            this->accuracy = 0.015;
+        }
 
         return controllerOutput;
     }
 
-    if (reqFwdSpeed - controllerOutput.forwardSpeed > fwdConst)
+    if (reqFwdSpeed - controllerOutput.forwardSpeed > this->fwdConst)
     {
-        controllerOutput.forwardSpeed += fwdConst;
+        controllerOutput.forwardSpeed += this->fwdConst;
     }
     else
     {
         controllerOutput.forwardSpeed = reqFwdSpeed;
     }
-    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 750);
+    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, this->forwardLimit);
 
 
-    if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
+    if (controllerOutput.rotationSpeed - reqRotSpeed > this->rotConst)
     {
-        controllerOutput.rotationSpeed -= rotConst;
+        controllerOutput.rotationSpeed -= this->rotConst;
     }
-    else if (controllerOutput.rotationSpeed - reqRotSpeed < -rotConst)
+    else if (controllerOutput.rotationSpeed - reqRotSpeed < -this->rotConst)
     {
-        controllerOutput.rotationSpeed += rotConst;
+        controllerOutput.rotationSpeed += this->rotConst;
     }
     else
     {
         controllerOutput.rotationSpeed = reqRotSpeed;
     }
-    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 2), -PI / 2);
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, this->rotationLimit), -this->rotationLimit);
 
     double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
     double radius = controllerOutput.forwardSpeed / denom;

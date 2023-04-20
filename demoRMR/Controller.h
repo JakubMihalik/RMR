@@ -46,6 +46,13 @@ public:
     std::queue<Point> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
+    double gainForward;
+    double gainRotation;
+    double rotConst;
+    int fwdConst;
+    double rotationLimit;
+    double forwardLimit;
+    double accuracy;
 
 /** Public methods **/
 public:
