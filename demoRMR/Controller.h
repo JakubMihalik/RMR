@@ -14,6 +14,19 @@
 
 #define ENABLE_CHECKPOINTS
 
+typedef struct
+{
+    double x;
+    double y;
+    double theta;
+} ErrorValue;
+
+typedef struct
+{
+    double forwardSpeed;
+    double rotationSpeed;
+    double reached;
+} ControllerOutput;
 
 class Controller
 {
@@ -27,22 +40,7 @@ private:
     double desiredX;
     double desiredY;
 
-/** Public variables and structures **/
 public:
-    typedef struct
-    {
-        double x;
-        double y;
-        double theta;
-    } ErrorValue;
-
-    typedef struct
-    {
-        double forwardSpeed;
-        double rotationSpeed;
-        double reached;
-    } ControllerOutput;
-
     std::queue<Point> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
