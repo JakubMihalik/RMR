@@ -33,15 +33,17 @@ void BugAlgorithm::updateLidar(LaserMeasurement laser)
 
 void BugAlgorithm::findObstacle()
 {
+    static double previousDistance = 0;
     // Maximal distance available
     double maxDist = -DBL_MAX;
     double angle = 0.0;
+
     // Loop over each laser measurement
     for (int i{0}; i < this->laser.numberOfScans; i++)
     {
-        double cosAngle = cos(DEG2RAD(this->laser.Data[i].scanAngle));
-        if (cosAngle >= cos(DEG2RAD(this->fovThreshold)))
-        {
+//        double cosAngle = cos(DEG2RAD(this->laser.Data[i].scanAngle));
+//        if (cosAngle >= cos(DEG2RAD(this->fovThreshold)))
+//        {
             if (this->laser.Data[i].scanDistance <= this->sensorDistanceThreshold &&
                 this->laser.Data[i].scanDistance > ROBOT_RADIUS &&
                 this->laser.Data[i].scanDistance > maxDist)
@@ -49,7 +51,18 @@ void BugAlgorithm::findObstacle()
                 maxDist = this->laser.Data[i].scanDistance;
                 angle = this->laser.Data[i].scanAngle;
             }
-        }
-        if (maxDist != -DBL_MAX && maxDist);
+//        }
     }
+    double distanceToFinish = sqrt(pow(this->finish.x - this->position.x, 2) + pow(this->finish.y - this->position.y, 2));
+    if (maxDist != -DBL_MAX && previousDistance < maxDist && maxDist < distanceToFinish)
+    {
+        // Add that obstacle as target
+        double obstacleX = this->position.x + (maxDist - ROBOT_DIAMETER) * cos(DEG2RAD(angle)) / 1000.0;
+        double obstacleY = this->position.y - (maxDist - ROBOT_DIAMETER) * sin(DEG2RAD(angle)) / 1000.0;
+
+        this->controller->checkpoints.push({obstacleX, obstacleY});
+        std::cout << "Obstacle added: " << obstacleX << ", " << obstacleY << std::endl;
+        std::cout << "Previous dist: " << previousDistance << " New dist: " << maxDist << std::endl << std::endl;
+    }
+    previousDistance = maxDist;
 }

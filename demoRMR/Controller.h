@@ -44,6 +44,7 @@ public:
     std::queue<Point> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
+    bool b_finishReached = false;
 
 /** Public methods **/
 public:

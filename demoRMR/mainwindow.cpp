@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->setCheckpoints(points);
 #endif
 #ifdef BUG_ALG
-    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 90.0, 3000.0);
+    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 3.0, 3000.0);
 #endif
 }
 
@@ -175,14 +175,17 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         initialStart = false;
         return 0;
     }
-    control->readOdometry(robotdata, &odData, controller->fStopLidar);
+    if (!controller->b_finishReached)
+    {
+        control->readOdometry(robotdata, &odData, controller->fStopLidar);
 #ifdef BUG_ALG
-    bugAlgorith->updatePosition({odData.posX, odData.posY});
-    bugAlgorith->findObstacle();
+        bugAlgorith->updatePosition({odData.posX, odData.posY});
+        bugAlgorith->findObstacle();
 #endif
-    controller->regulate();
+        controller->regulate();
 
-    robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+        robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+    }
 
     if(datacounter%5)
     {
@@ -203,15 +206,18 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    DistanceMeasure dm;
-    dm = objDetect->readLaserData(laserData);
-    if (!controller->fStopLidar)
+    if (!controller->b_finishReached)
     {
-        objDetect->writeLidarMap(lidarData, odData, laserData);
-    }
+        DistanceMeasure dm;
+        dm = objDetect->readLaserData(laserData);
+        if (!controller->fStopLidar)
+        {
+            objDetect->writeLidarMap(lidarData, odData, laserData);
+        }
 #ifdef BUG_ALG
-    bugAlgorith->updateLidar(laserData);
+        bugAlgorith->updateLidar(laserData);
 #endif
+    }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 

@@ -52,6 +52,11 @@ ControllerOutput Controller::regulate()
         {
             this->checkpoints.pop();
         }
+        else
+        {
+            this->b_finishReached = true;
+            std::cout << "Finished" << std::endl;
+        }
 
         return controllerOutput;
     }
