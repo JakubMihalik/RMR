@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "BugAlgorithm.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
@@ -20,6 +21,7 @@ ofstream robotPositions;
 ofstream lidarData;
 ofstream map2D;
 PathPlanning* pathPlanning;
+BugAlgorithm* bugAlgorith;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -81,6 +83,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Set checkpoints to Controller object
     controller->setCheckpoints(points);
+#endif
+#ifdef BUG_ALG
+    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 90.0, 3000.0);
 #endif
 }
 
@@ -170,8 +175,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         initialStart = false;
         return 0;
     }
-
     control->readOdometry(robotdata, &odData, controller->fStopLidar);
+#ifdef BUG_ALG
+    bugAlgorith->updatePosition({odData.posX, odData.posY});
+    bugAlgorith->findObstacle();
+#endif
     controller->regulate();
 
     robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
@@ -201,6 +209,9 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     {
         objDetect->writeLidarMap(lidarData, odData, laserData);
     }
+#ifdef BUG_ALG
+    bugAlgorith->updateLidar(laserData);
+#endif
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 

@@ -5,10 +5,12 @@
 #include "PathPlanning.h"
 #include "rplidar.h"
 
+#define BUG_ALG
+
 class BugAlgorithm
 {
 public:
-    BugAlgorithm(double distanceThreshold, double fovThreshold, double sensorDistanceThreshold);
+    BugAlgorithm(Robot* robot, Controller* controller, Point destination, double distanceThreshold, double fovThreshold, double sensorDistanceThreshold);
     ~BugAlgorithm();
 
 /** Public variables **/
@@ -17,10 +19,25 @@ public:
     double fovThreshold;
     double sensorDistanceThreshold;
     Point finish;
+    bool b_isFollowingObstacle;
+
+/** Private variables **/
+private:
+    Robot* robot;
+    Controller* controller;
+    LaserMeasurement laser;
+    Point position = {0.0, 0.0};
+    Point destination;
 
 /** Public methods **/
 public:
-    void followWall(LaserMeasurement laser, ControllerOutput& controller);
+    void updatePosition(Point position);
+    void updateLidar(LaserMeasurement laser);
+
+/** Private methods **/
+public: // TODO: Change to private
+    void findObstacle();
+    void followObstacle();
 };
 
 #endif // BUGALGORITHM_H

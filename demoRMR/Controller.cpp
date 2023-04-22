@@ -1,4 +1,5 @@
 #include "Controller.h"
+#include "BugAlgorithm.h"
 
 Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, double desiredY)
 {
@@ -10,12 +11,14 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->fRotating = false;
 
 #ifndef ENABLE_CHECKPOINTS
+ #ifndef BUG_ALG
     this->checkpoints.push({0, 3});
     this->checkpoints.push({2.7, 3});
     this->checkpoints.push({2.7, 0.4});
     this->checkpoints.push({4.75, 0.4});
     this->checkpoints.push({4.75, 1.8});
     std::cout << "Default checkpoints used. No dynamic calculation enabled...\n";
+ #endif
 #else
     std::cout << "Calculating checkpoints\n";
 #endif
@@ -27,10 +30,10 @@ Controller::~Controller()
     delete this->odData;
 }
 
-Controller::ControllerOutput Controller::regulate()
+ControllerOutput Controller::regulate()
 {
-    Controller::ErrorValue ev = Controller::calculateErrors();
-    static Controller::ControllerOutput controllerOutput;
+    ErrorValue ev = Controller::calculateErrors();
+    static ControllerOutput controllerOutput;
 
     double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
     double reqFwdSpeed = 1000 * distance;
@@ -92,7 +95,7 @@ Controller::ControllerOutput Controller::regulate()
     return controllerOutput;
 }
 
-Controller::ErrorValue Controller::calculateErrors()
+ErrorValue Controller::calculateErrors()
 {
     double eX = abs(this->checkpoints.front().x - this->odData->posX);
     double eY = abs(this->checkpoints.front().y - this->odData->posY);
@@ -105,7 +108,7 @@ Controller::ErrorValue Controller::calculateErrors()
     } else if (eTheta < -PI) {
         eTheta += 2*PI;
     }
-    Controller::ErrorValue e = {eX, eY, eTheta};
+    ErrorValue e = {eX, eY, eTheta};
     return e;
 }
 
