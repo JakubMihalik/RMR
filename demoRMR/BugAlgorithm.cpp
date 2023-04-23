@@ -1,15 +1,17 @@
 #include "BugAlgorithm.h"
+#include "PathPlanning.h"
 
 BugAlgorithm::BugAlgorithm(Robot* robot, Controller* controller, Point destination, double distanceThreshold, double fovThreshold, double sensorDistanceThreshold)
 {
     this->robot = robot;
     this->controller = controller;
     this->destination = destination;
+    this->finish = destination;
     this->distanceThreshold = distanceThreshold;
     this->fovThreshold = fovThreshold;
     this->sensorDistanceThreshold = sensorDistanceThreshold;
 
-    this->b_isFollowingObstacle = false;
+    this->b_followingWall = false;
 
     // Add destination to queue
     this->controller->checkpoints.push(this->destination);
@@ -41,9 +43,9 @@ void BugAlgorithm::findObstacle()
     // Loop over each laser measurement
     for (int i{0}; i < this->laser.numberOfScans; i++)
     {
-//        double cosAngle = cos(DEG2RAD(this->laser.Data[i].scanAngle));
-//        if (cosAngle >= cos(DEG2RAD(this->fovThreshold)))
-//        {
+        double cosAngle = cos(DEG2RAD(this->laser.Data[i].scanAngle));
+        if (cosAngle >= cos(DEG2RAD(this->fovThreshold)))
+        {
             if (this->laser.Data[i].scanDistance <= this->sensorDistanceThreshold &&
                 this->laser.Data[i].scanDistance > ROBOT_RADIUS &&
                 this->laser.Data[i].scanDistance > maxDist)
@@ -51,18 +53,23 @@ void BugAlgorithm::findObstacle()
                 maxDist = this->laser.Data[i].scanDistance;
                 angle = this->laser.Data[i].scanAngle;
             }
-//        }
+        }
     }
-    double distanceToFinish = sqrt(pow(this->finish.x - this->position.x, 2) + pow(this->finish.y - this->position.y, 2));
-    if (maxDist != -DBL_MAX && previousDistance < maxDist && maxDist < distanceToFinish)
+    double distanceToFinish = sqrt(pow(this->finish.x - this->position.x, 2) + pow(this->finish.y - this->position.y, 2)) * 1000.0;
+    if (!this->b_followingWall && maxDist != -DBL_MAX && previousDistance < maxDist && maxDist < distanceToFinish)
     {
         // Add that obstacle as target
         double obstacleX = this->position.x + (maxDist - ROBOT_DIAMETER) * cos(DEG2RAD(angle)) / 1000.0;
         double obstacleY = this->position.y - (maxDist - ROBOT_DIAMETER) * sin(DEG2RAD(angle)) / 1000.0;
 
         this->controller->checkpoints.push({obstacleX, obstacleY});
-        std::cout << "Obstacle added: " << obstacleX << ", " << obstacleY << std::endl;
-        std::cout << "Previous dist: " << previousDistance << " New dist: " << maxDist << std::endl << std::endl;
+        this->b_followingWall = true;
+        std::cout << "Added point [" << obstacleX << ", " << obstacleY << "]" << std::endl;
     }
     previousDistance = maxDist;
+}
+
+void BugAlgorithm::followObstacle()
+{
+
 }

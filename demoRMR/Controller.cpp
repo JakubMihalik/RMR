@@ -102,12 +102,12 @@ ControllerOutput Controller::regulate()
 
 ErrorValue Controller::calculateErrors()
 {
-    double eX = abs(this->checkpoints.front().x - this->odData->posX);
-    double eY = abs(this->checkpoints.front().y - this->odData->posY);
+    double eX = abs(this->checkpoints.top().x - this->odData->posX);
+    double eY = abs(this->checkpoints.top().y - this->odData->posY);
 
     // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->checkpoints.front().y - this->odData->posY,
-                          this->checkpoints.front().x - this->odData->posX) - this->odData->rotation * PI / 180;
+    double eTheta = atan2(this->checkpoints.top().y - this->odData->posY,
+                          this->checkpoints.top().x - this->odData->posX) - this->odData->rotation * PI / 180;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {
@@ -117,7 +117,7 @@ ErrorValue Controller::calculateErrors()
     return e;
 }
 
-void Controller::setCheckpoints(std::queue<Point>& checkpoints)
+void Controller::setCheckpoints(std::stack<Point>& checkpoints)
 {
     this->checkpoints = std::move(checkpoints);
 }

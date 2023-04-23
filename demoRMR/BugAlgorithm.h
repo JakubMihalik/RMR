@@ -19,7 +19,7 @@ public:
     double fovThreshold;
     double sensorDistanceThreshold;
     Point finish;
-    bool b_isFollowingObstacle;
+    std::atomic_bool b_followingWall;
 
 /** Private variables **/
 private:

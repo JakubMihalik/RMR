@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->setCheckpoints(points);
 #endif
 #ifdef BUG_ALG
-    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 3.0, 3000.0);
+    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 90.0, 3000.0);
 #endif
 }
 
