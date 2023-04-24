@@ -10,9 +10,9 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->fRotating = false;
 
     this->gainForward = 2000;
-    this->gainRotation = 9;
-    this->rotConst = PI / 4;
-    this->fwdConst = 15;
+    this->gainRotation = 10;
+    this->rotConst = PI / 32;
+    this->fwdConst = 10;
     this->forwardLimit = 1500;
     this->rotationLimit = PI / 2;
     this->accuracy = 0.03;
