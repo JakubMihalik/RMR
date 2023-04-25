@@ -7,8 +7,7 @@
 #include "robot.h"
 #include "Odometry.h"
 #include <cmath>
-#include <queue>
-#include <stack>
+#include <vector>
 #include "PathPlanning.h"
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
@@ -42,7 +41,7 @@ private:
     double desiredY;
 
 public:
-    std::stack<Point> checkpoints;
+    std::vector<Point> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
     bool b_finishReached = false;
@@ -50,8 +49,8 @@ public:
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    ControllerOutput regulate();
-    void setCheckpoints(std::stack<Point>& checkpoints);
+    ControllerOutput regulate(std::atomic_bool* isWallFollow, std::atomic_bool* isPreparingFollow);
+    void setCheckpoints(std::vector<Point>& checkpoints);
 };
 
 #endif // CONTROLLER_H

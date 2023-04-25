@@ -182,7 +182,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         bugAlgorith->updatePosition({odData.posX, odData.posY});
         bugAlgorith->findObstacle();
 #endif
-        controller->regulate();
+        controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
 
         robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
     }

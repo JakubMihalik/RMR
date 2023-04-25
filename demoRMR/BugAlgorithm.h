@@ -20,6 +20,7 @@ public:
     double sensorDistanceThreshold;
     Point finish;
     std::atomic_bool b_followingWall;
+    std::atomic_bool b_prepareForFollow;
 
 /** Private variables **/
 private:
@@ -38,6 +39,8 @@ public:
 public: // TODO: Change to private
     void findObstacle();
     void followObstacle();
+    bool isWithinRange(double measured, double reference, double rangeDeg);
+    double rad2degree(double rad);
 };
 
 #endif // BUGALGORITHM_H

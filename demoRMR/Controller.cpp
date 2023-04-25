@@ -30,7 +30,7 @@ Controller::~Controller()
     delete this->odData;
 }
 
-ControllerOutput Controller::regulate()
+ControllerOutput Controller::regulate(atomic_bool* isWallFollow, std::atomic_bool* isPreparingFollow)
 {
     ErrorValue ev = Controller::calculateErrors();
     static ControllerOutput controllerOutput;
@@ -50,7 +50,9 @@ ControllerOutput Controller::regulate()
 
         if (this->checkpoints.size() > 1)
         {
-            this->checkpoints.pop();
+            this->checkpoints.pop_back();
+            *isPreparingFollow = false;
+            *isWallFollow = true;
         }
         else
         {
@@ -102,12 +104,12 @@ ControllerOutput Controller::regulate()
 
 ErrorValue Controller::calculateErrors()
 {
-    double eX = abs(this->checkpoints.top().x - this->odData->posX);
-    double eY = abs(this->checkpoints.top().y - this->odData->posY);
+    double eX = abs(this->checkpoints.back().x - this->odData->posX);
+    double eY = abs(this->checkpoints.back().y - this->odData->posY);
 
     // Calculate the difference between the current heading and the desired heading
-    double eTheta = atan2(this->checkpoints.top().y - this->odData->posY,
-                          this->checkpoints.top().x - this->odData->posX) - this->odData->rotation * PI / 180;
+    double eTheta = atan2(this->checkpoints.back().y - this->odData->posY,
+                          this->checkpoints.back().x - this->odData->posX) - this->odData->rotation * PI / 180;
     if (eTheta > PI) {
         eTheta -= 2*PI;
     } else if (eTheta < -PI) {
@@ -117,7 +119,7 @@ ErrorValue Controller::calculateErrors()
     return e;
 }
 
-void Controller::setCheckpoints(std::stack<Point>& checkpoints)
+void Controller::setCheckpoints(std::vector<Point>& checkpoints)
 {
     this->checkpoints = std::move(checkpoints);
 }
