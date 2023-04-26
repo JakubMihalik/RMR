@@ -8,7 +8,6 @@
 #include "Odometry.h"
 #include <cmath>
 #include <vector>
-#include "PathPlanning.h"
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
@@ -20,6 +19,12 @@ typedef struct
     double y;
     double theta;
 } ErrorValue;
+
+typedef struct
+{
+    double x;
+    double y;
+} Point;
 
 typedef struct
 {
@@ -50,7 +55,7 @@ public:
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    ControllerOutput regulate(std::atomic_bool* isWallFollow, std::atomic_bool* isPreparingFollow);
+    ControllerOutput regulate();
     void setCheckpoints(std::vector<Point>& checkpoints);
     void followWall();
     void updateLidarData(LaserMeasurement laser);

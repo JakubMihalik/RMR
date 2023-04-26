@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "BugAlgorithm.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
@@ -7,21 +6,13 @@
 /** Custom variables -> move to interface later **/
 #include "Odometry.h"
 #include "Controller.h"
-#include "ObjectDetection.h"
 #include <fstream>
 #include <iostream>
-#include "PathPlanning.h"
 
 Odometry* control = new Odometry();
-ObjectDetection* objDetect = new ObjectDetection();
 OdometryData odData = {0};
 Controller* controller;
 bool initialStart = true;
-ofstream robotPositions;
-ofstream lidarData;
-ofstream map2D;
-PathPlanning* pathPlanning;
-BugAlgorithm* bugAlgorith;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -46,61 +37,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
-    robotPositions.open("C:\\RMR_Files\\robotPositions.csv");
-    if (!robotPositions.is_open())
-    {
-        std::cout << "File robotPositions cannot be opened\n";
-        return;
-    }
-
-    lidarData.open("C:\\RMR_Files\\lidarMeasures.csv");
-    if (!lidarData.is_open())
-    {
-        std::cout << "File lidarData cannot be opened\n";
-        return;
-    }
-
-    map2D.open("C:\\RMR_Files\\map2D.txt");
-    if (!map2D.is_open())
-    {
-        std::cout << "File map2D cannot be opened\n";
-        return;
-    }
-
-#ifdef ENABLE_CHECKPOINTS
-    // Path planning
-    std::ifstream map("C:\\RMR_Files\\static\\map2D.txt");
-    if (!map.is_open())
-    {
-        std::cerr << "Cannot open map file\n";
-        map.close();
-        return;
-    }
-    pathPlanning = new PathPlanning(map, 6.0, 6.0, 0.05, -0.5, -0.5);
-    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 4.5, 1.85);
-    std::cout << "Path planned whith " << points.size() << " checkpoints\n";
-    map.close();
-
-    // Set checkpoints to Controller object
-    controller->setCheckpoints(points);
-#endif
-#ifdef BUG_ALG
-    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 90.0, 3000.0);
-#endif
+    controller->checkpoints.push_back({0.0, 3.0});
 }
 
 MainWindow::~MainWindow()
 {
-    objDetect->writeMap2D(map2D);
-    map2D.close();
-    robotPositions.close();
-    lidarData.close();
-
-    while (map2D.is_open() || robotPositions.is_open() || lidarData.is_open());
-
     delete ui;
     delete control;
-    delete objDetect;
 
     std::cout << "All closed and destroyed\n\n";
 }
@@ -178,23 +121,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     if (!controller->b_finishReached)
     {
         control->readOdometry(robotdata, &odData, controller->fStopLidar);
-#ifdef BUG_ALG
-        bugAlgorith->updatePosition({odData.posX, odData.posY});
-        bugAlgorith->findObstacle();
-        if (bugAlgorith->b_followingWall)
-        {
-            controller->followWall();
-        }
-        else
-        {
-            controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
-        }
-#endif
-#ifndef BUG_ALG
-        controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
-#endif
-
-        robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+        controller->regulate();
     }
 
     if(datacounter%5)
@@ -216,20 +143,6 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    if (!controller->b_finishReached)
-    {
-        DistanceMeasure dm;
-        dm = objDetect->readLaserData(laserData);
-        if (!controller->fStopLidar)
-        {
-            objDetect->writeLidarMap(lidarData, odData, laserData);
-        }
-#ifdef BUG_ALG
-        bugAlgorith->updateLidar(laserData);
-        controller->updateLidarData(laserData);
-#endif
-    }
-//    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 
     updateLaserPicture=1;

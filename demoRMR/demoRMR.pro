@@ -60,16 +60,12 @@ win32 {
 SOURCES += main.cpp\
         BugAlgorithm.cpp \
         Controller.cpp \
-        ObjectDetection.cpp \
         Odometry.cpp \
-        PathPlanning.cpp \
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
     BugAlgorithm.h \
     Controller.h \
-    ObjectDetection.h \
-    Odometry.h \
-    PathPlanning.h
+    Odometry.h
 
 FORMS    += mainwindow.ui
