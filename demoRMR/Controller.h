@@ -56,6 +56,7 @@ public:
 public:
     ErrorValue calculateErrors();
     ControllerOutput regulate();
+    void regulateDynamic();
     void setCheckpoints(std::vector<Point>& checkpoints);
     void followWall();
     void updateLidarData(LaserMeasurement laser);
