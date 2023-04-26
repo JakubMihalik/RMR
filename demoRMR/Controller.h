@@ -7,13 +7,26 @@
 #include "robot.h"
 #include "Odometry.h"
 #include <cmath>
-#include <queue>
+#include <vector>
 #include "PathPlanning.h"
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
-#define ENABLE_CHECKPOINTS
+//#define ENABLE_CHECKPOINTS
 
+typedef struct
+{
+    double x;
+    double y;
+    double theta;
+} ErrorValue;
+
+typedef struct
+{
+    double forwardSpeed;
+    double rotationSpeed;
+    double reached;
+} ControllerOutput;
 
 class Controller
 {
@@ -26,32 +39,21 @@ private:
     OdometryData* odData;
     double desiredX;
     double desiredY;
+    LaserMeasurement laser;
 
-/** Public variables and structures **/
 public:
-    typedef struct
-    {
-        double x;
-        double y;
-        double theta;
-    } ErrorValue;
-
-    typedef struct
-    {
-        double forwardSpeed;
-        double rotationSpeed;
-        double reached;
-    } ControllerOutput;
-
-    std::queue<Point> checkpoints;
+    std::vector<Point> checkpoints;
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
+    bool b_finishReached = false;
 
 /** Public methods **/
 public:
     ErrorValue calculateErrors();
-    ControllerOutput regulate();
-    void setCheckpoints(std::queue<Point>& checkpoints);
+    ControllerOutput regulate(std::atomic_bool* isWallFollow, std::atomic_bool* isPreparingFollow);
+    void setCheckpoints(std::vector<Point>& checkpoints);
+    void followWall();
+    void updateLidarData(LaserMeasurement laser);
 };
 
 #endif // CONTROLLER_H

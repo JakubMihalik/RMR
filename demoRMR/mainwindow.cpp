@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "BugAlgorithm.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
@@ -20,6 +21,7 @@ ofstream robotPositions;
 ofstream lidarData;
 ofstream map2D;
 PathPlanning* pathPlanning;
+BugAlgorithm* bugAlgorith;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -28,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-//    ipaddress="127.0.0.1";
-    ipaddress = "192.168.1.13";
+    ipaddress="127.0.0.1";
+//    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -81,6 +83,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Set checkpoints to Controller object
     controller->setCheckpoints(points);
+#endif
+#ifdef BUG_ALG
+    bugAlgorith = new BugAlgorithm(&this->robot, controller, {4.5, 1.85}, ROBOT_RADIUS, 90.0, 3000.0);
 #endif
 }
 
@@ -170,11 +175,27 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         initialStart = false;
         return 0;
     }
+    if (!controller->b_finishReached)
+    {
+        control->readOdometry(robotdata, &odData, controller->fStopLidar);
+#ifdef BUG_ALG
+        bugAlgorith->updatePosition({odData.posX, odData.posY});
+        bugAlgorith->findObstacle();
+        if (bugAlgorith->b_followingWall)
+        {
+            controller->followWall();
+        }
+        else
+        {
+            controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
+        }
+#endif
+#ifndef BUG_ALG
+        controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
+#endif
 
-    control->readOdometry(robotdata, &odData, controller->fStopLidar);
-    controller->regulate();
-
-    robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+        robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
+    }
 
     if(datacounter%5)
     {
@@ -195,11 +216,18 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    DistanceMeasure dm;
-    dm = objDetect->readLaserData(laserData);
-    if (!controller->fStopLidar)
+    if (!controller->b_finishReached)
     {
-        objDetect->writeLidarMap(lidarData, odData, laserData);
+        DistanceMeasure dm;
+        dm = objDetect->readLaserData(laserData);
+        if (!controller->fStopLidar)
+        {
+            objDetect->writeLidarMap(lidarData, odData, laserData);
+        }
+#ifdef BUG_ALG
+        bugAlgorith->updateLidar(laserData);
+        controller->updateLidarData(laserData);
+#endif
     }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
@@ -231,8 +259,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 
