@@ -39,6 +39,7 @@ private:
     OdometryData* odData;
     double desiredX;
     double desiredY;
+    LaserMeasurement laser;
 
 public:
     std::vector<Point> checkpoints;
@@ -51,6 +52,8 @@ public:
     ErrorValue calculateErrors();
     ControllerOutput regulate(std::atomic_bool* isWallFollow, std::atomic_bool* isPreparingFollow);
     void setCheckpoints(std::vector<Point>& checkpoints);
+    void followWall();
+    void updateLidarData(LaserMeasurement laser);
 };
 
 #endif // CONTROLLER_H

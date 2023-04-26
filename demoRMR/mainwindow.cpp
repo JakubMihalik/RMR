@@ -181,8 +181,18 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 #ifdef BUG_ALG
         bugAlgorith->updatePosition({odData.posX, odData.posY});
         bugAlgorith->findObstacle();
+        if (bugAlgorith->b_followingWall)
+        {
+            controller->followWall();
+        }
+        else
+        {
+            controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
+        }
 #endif
+#ifndef BUG_ALG
         controller->regulate(&bugAlgorith->b_followingWall, &bugAlgorith->b_prepareForFollow);
+#endif
 
         robotPositions << odData.posX << "," << odData.posY << "," << odData.rotation << "\n";
     }
@@ -216,6 +226,7 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
         }
 #ifdef BUG_ALG
         bugAlgorith->updateLidar(laserData);
+        controller->updateLidarData(laserData);
 #endif
     }
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);

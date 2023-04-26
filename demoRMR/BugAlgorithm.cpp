@@ -57,7 +57,7 @@ void BugAlgorithm::findObstacle()
             angle = this->laser.Data[i].scanAngle;
         }
 
-        if (isWithinRange(b_validLidarReading && this->laser.Data[i].scanAngle, headingAngle, 2.0) && this->laser.Data[i].scanDistance >= distanceToFinish)
+        if (b_validLidarReading && isWithinRange(this->laser.Data[i].scanAngle, headingAngle, 2.0) && this->laser.Data[i].scanDistance >= distanceToFinish)
         {
             b_finishReachable = true;
         }
@@ -87,6 +87,7 @@ void BugAlgorithm::findObstacle()
         // If robot is prepared to follow wall start following it
         if (this->b_followingWall && !this->b_prepareForFollow)
         {
+            this->controller->checkpoints.clear();
             followObstacle();
         }
     }
@@ -95,7 +96,6 @@ void BugAlgorithm::findObstacle()
 void BugAlgorithm::followObstacle()
 {
     // We need to align with wall and generate required checkpoints
-
 }
 
 bool BugAlgorithm::isWithinRange(double measured, double reference, double rangeDeg)

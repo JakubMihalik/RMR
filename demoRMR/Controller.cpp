@@ -123,3 +123,43 @@ void Controller::setCheckpoints(std::vector<Point>& checkpoints)
 {
     this->checkpoints = std::move(checkpoints);
 }
+
+void Controller::followWall()
+{
+    double wallDistance = -1;
+
+    for (int i{0}; i < this->laser.numberOfScans; i++)
+    {
+//        if (this->laser.Data[i].scanDistance > 130 && this->laser.Data[i].scanDistance < 3000)
+//        {
+            if (this->laser.Data[i].scanAngle <= 270.5 && this->laser.Data[i].scanAngle >= 269.5)
+            {
+                wallDistance = this->laser.Data[i].scanDistance / 1000.0;
+                break;
+            }
+//        }
+    }
+
+    if (wallDistance == -1) return;
+    // Calculate rotation speed
+    double theta = (ROBOT_RADIUS - wallDistance) / 2;
+    double absError = abs(ROBOT_RADIUS - wallDistance);
+
+    std::cout << "Theta: " << theta << std::endl;
+    std::cout << "Distance: " << wallDistance << std::endl;
+    std::cout << "Error: " << absError << std::endl << std::endl;
+
+    if (absError <= ROBOT_DIAMETER && absError >= ROBOT_RADIUS)
+    {
+        this->robot->setTranslationSpeed(100);
+    }
+    else
+    {
+        this->robot->setRotationSpeed(theta);
+    }
+}
+
+void Controller::updateLidarData(LaserMeasurement laser)
+{
+    this->laser = laser;
+}
