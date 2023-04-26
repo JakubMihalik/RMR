@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
-    controller->checkpoints.push_back({0.0, 3.0});
+    controller->checkpoints.push_back({4.5, 1.85});
 }
 
 MainWindow::~MainWindow()
