@@ -44,11 +44,12 @@ class BugAlgorithm
         Point startingFollowPosition;
         Point start;
         Point goal;
+        Point reachingPos;
         Point findNextObstaclePoint(const Point& currentPos, const Point& goal, const std::vector<Point>& obstacles, double maxGoalDistanceIncrease);
         std::vector<Point> obstacles;
         size_t obstacleIndex;
 
-        constexpr static const double SAFE_DISTANCE = 0.4; // 30 cm
+        constexpr static const double SAFE_DISTANCE = 0.5   ; // 30 cm
         constexpr static const double SAFE_ANGLE = DEG2RAD(30); // 30 cm
     public:
         BugAlgorithm(Controller*, OdometryData*, Robot*);

@@ -60,6 +60,7 @@ win32 {
 SOURCES += main.cpp\
         BugAlgorithm.cpp \
         Controller.cpp \
+        DBScan.cpp \
         ObjectDetection.cpp \
         Odometry.cpp \
         PathPlanning.cpp \
@@ -68,6 +69,7 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
     BugAlgorithm.h \
     Controller.h \
+    DBScan.h \
     ObjectDetection.h \
     Odometry.h \
     PathPlanning.h

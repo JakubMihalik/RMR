@@ -50,7 +50,7 @@ void BugAlgorithm::processRawLidarData(LaserMeasurement laserData)
         double lidarAngleRad = (360.0 - laserData.Data[i].scanAngle) * PI / 180.0;
         double x = odData->posX + (laserData.Data[i].scanDistance / 1000.0) * cos(lidarAngleRad + robotAngleRad);
         double y = odData->posY + (laserData.Data[i].scanDistance / 1000.0) * sin(lidarAngleRad + robotAngleRad);
-        if (laserData.Data[i].scanDistance / 1000.0 <= SAFE_DISTANCE)
+        if (laserData.Data[i].scanDistance != 0)
         {
             obstacles.push_back({x, y});
         }
@@ -60,32 +60,31 @@ void BugAlgorithm::processRawLidarData(LaserMeasurement laserData)
 
 void BugAlgorithm::followObstacle()
 {
-    Point currentPos = this->start;
     Controller::ErrorValue ev;
-    while (distance(currentPos.x, currentPos.y, this->goal.x, this->goal.y) > 0.1)
+    if (this->robotState == MOVE_TO_GOAL)
     {
-        if (this->robotState == MOVE_TO_GOAL && !isObstacleInPath())
+        if (!isObstacleInPath())
         {
-            currentPos = goal;
-            ev = controller->calculateErrors(currentPos, 0, 0);
+            ev = controller->calculateErrors(this->goal, 0, 0);
             controller->regulate(ev);
         }
         else
         {
-            if (this->robotState == FOLLOW_OBSTACLE) {
-                // Find the first obstacle hit
-                isObstacleInPath();
-                // Move along the obstacle boundary
-                double maxGoalDistanceIncrease = 1; // Set an appropriate threshold based on your environment
-                currentPos = findNextObstaclePoint(currentPos, this->goal, this->obstacles, maxGoalDistanceIncrease);
-                ev = controller->calculateErrors(currentPos, PI/2 + this->odData->rotation * PI / 180 , SAFE_DISTANCE);
+            this->robotState = FOLLOW_OBSTACLE;
+        }
+    }
+    else
+    {
+        if (this->robotState == FOLLOW_OBSTACLE) {
+            if (!isObstacleInPath())
+            {
+                this->robotState = MOVE_TO_GOAL;
+            }
+            else
+            {
+                reachingPos = findNextObstaclePoint({this->odData->posX, this->odData->posY}, this->goal, this->obstacles, 0.1);
+                ev = controller->calculateErrors({reachingPos.x-SAFE_DISTANCE, reachingPos.y-SAFE_DISTANCE}, 0, 0);
                 controller->regulate(ev);
-                std::cout<<"Found a point! x: " << currentPos.x << " y: " << currentPos.y << std::endl;
-                this->obstacleIndex = (obstacleIndex + 1) % obstacles.size();
-                if (!isObstacleInPath())
-                {
-                    this->robotState = MOVE_TO_GOAL;
-                }
             }
         }
     }
@@ -99,6 +98,7 @@ bool BugAlgorithm::isObstacleInPath()
         if (doLineSegmentsIntersect(this->start, this->goal, p1, p2)) {
             this->obstacleIndex = i;
             this->robotState = FOLLOW_OBSTACLE;
+            std::cout<<"Point 1: "<<p1.x << ", " << p1.y << std::endl;
             return true;
         }
     }
@@ -106,6 +106,7 @@ bool BugAlgorithm::isObstacleInPath()
 }
 
 bool BugAlgorithm::doLineSegmentsIntersect(Point start, Point goal, Point p2, Point q2) {
+    // Heading line from start -> goal
     double a1 = goal.y - start.y;
     double b1 = start.x - goal.x;
     double c1 = a1 * start.x + b1 * start.y;
@@ -118,7 +119,9 @@ bool BugAlgorithm::doLineSegmentsIntersect(Point start, Point goal, Point p2, Po
 
     if (det == 0) {
         return false; // Line segments are parallel
-    } else {
+    }
+    else
+    {
         double x = (b2 * c1 - b1 * c2) / det;
         double y = (a1 * c2 - a2 * c1) / det;
         bool isXWithinSegments = (x >= min(start.x, goal.x) && x <= max(start.x, goal.x) &&
@@ -130,24 +133,33 @@ bool BugAlgorithm::doLineSegmentsIntersect(Point start, Point goal, Point p2, Po
 }
 
 Point BugAlgorithm::findNextObstaclePoint(const Point& currentPos, const Point& goal, const std::vector<Point>& obstacles, double maxGoalDistanceIncrease) {
-    Point nextPoint = currentPos;
-    double minTotalDistance = (std::numeric_limits<double>::max)();
+    Point nextPoint = reachingPos;
+    double minTotalDistance = DBL_MAX;
+    double maxTotalDistance = -DBL_MAX;
     double currentDistanceToGoal = this->distance(currentPos, goal);
 
-    for (const Point& obstaclePoint : obstacles) {
+    for (const Point& obstaclePoint : obstacles)
+    {
         double distanceToObstaclePoint = distance(currentPos, obstaclePoint);
-        double distanceToGoal = distance(obstaclePoint, goal);
+        double distanceToGoal = distance(obstaclePoint, this->goal);
+        double totalDistance = distanceToObstaclePoint + distanceToGoal;
+        if (totalDistance < minTotalDistance)
+        {
+            minTotalDistance = totalDistance;
+            nextPoint = obstaclePoint;
+        }
+
 
         // Check if the increase in the distance to the goal is within the allowed threshold
-        if (distanceToGoal <= currentDistanceToGoal + maxGoalDistanceIncrease) {
-            double totalDistance = distanceToObstaclePoint + distanceToGoal;
-            if (totalDistance < minTotalDistance) {
-                minTotalDistance = totalDistance;
-                nextPoint = obstaclePoint;
-            }
-        }
+//        if (distanceToGoal <= currentDistanceToGoal) {
+//            double totalDistance = distanceToObstaclePoint + distanceToGoal;
+//            if (totalDistance < minTotalDistance) {
+//                minTotalDistance = totalDistance;
+//                nextPoint = obstaclePoint;
+//            }
+//        }
     }
-
+    std::cout<<"nextpoint x: " << nextPoint.x << "nexpoint y: " << nextPoint.y << std::endl;
     return nextPoint;
 }
 

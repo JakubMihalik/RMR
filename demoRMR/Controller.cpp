@@ -17,7 +17,8 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
 //    this->checkpoints.push({2.55,0.75});
 //    this->checkpoints.push({4.65,0.75});
 //    this->checkpoints.push({4.65,1.75});
-    this->checkpoints.push({4.5,1.75});
+//    this->checkpoints.push({4.5,1.75});
+    this->checkpoints.push({3.7, 2});
 }
 
 Controller::~Controller()
@@ -31,7 +32,7 @@ Controller::~Controller()
 Controller::ControllerOutput Controller::regulate(Controller::ErrorValue ev)
 {
     static Controller::ControllerOutput controllerOutput;
-    std::cout<<"Error theta: " << ev.theta << " distance: " << ev.distance << std::endl;
+//    std::cout<<"Error theta: " << ev.theta << " distance: " << ev.distance << std::endl;
 
     double reqFwdSpeed = 1000 * ev.distance;
     double reqRotSpeed = 10 * ev.theta;
