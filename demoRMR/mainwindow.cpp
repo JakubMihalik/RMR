@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "BugAlgorithm.h"
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
@@ -13,6 +14,7 @@ Odometry* control = new Odometry();
 OdometryData odData = {0};
 Controller* controller;
 bool initialStart = true;
+BugAlgorithm* bugAlg;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,12 +40,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
     controller->checkpoints.push_back({4.5, 1.85});
+    controller->checkpoints.push_back({0.0, 3.0});
+    bugAlg = new BugAlgorithm({4.5, 1.85});
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete control;
+    delete bugAlg;
 
     std::cout << "All closed and destroyed\n\n";
 }
@@ -143,6 +148,12 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
+    if (!controller->fRotating)
+    {
+        bugAlg->updatePosition({odData.posX, odData.posY});
+        bugAlg->updateLidar(laserData);
+        bugAlg->proccess();
+    }
     // End laser data processing
 
     updateLaserPicture=1;

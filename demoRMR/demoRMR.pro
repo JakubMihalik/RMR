@@ -66,6 +66,7 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
     BugAlgorithm.h \
     Controller.h \
-    Odometry.h
+    Odometry.h \
+    types.h
 
 FORMS    += mainwindow.ui

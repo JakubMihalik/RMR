@@ -8,23 +8,11 @@
 #include "Odometry.h"
 #include <cmath>
 #include <vector>
+#include "types.h"
 
 #define deg2rad(d) ((d * 3.1415926536) / 180.0)
 
 //#define ENABLE_CHECKPOINTS
-
-typedef struct
-{
-    double x;
-    double y;
-    double theta;
-} ErrorValue;
-
-typedef struct
-{
-    double x;
-    double y;
-} Point;
 
 typedef struct
 {
