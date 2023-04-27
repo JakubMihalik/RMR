@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <fstream>
+
 #define ROBOT_RADIUS_MM    350
 #define ROBOT_RADIUS_M     0.35
 #define ROBOT_DIAMETER_MM (2 * ROBOT_RADIUS_MM)
@@ -30,6 +32,23 @@ typedef struct
   double distance;
   bool isColliding;
 } LidarPoint;
+
+typedef struct {
+    unsigned short leftWheelTicks;
+    unsigned short rightWheelTicks;
+    double distRightWheel;
+    double distLeftWheel;
+    double rotation;
+    double posX;
+    double posY;
+    double distance;
+    double deltaTheta;
+    int leftWheelOverflow;
+    int rightWheelOverflow;
+    int rDelta;
+    int lDelta;
+    double initRotation;
+} OdometryData;
 
 inline double degreesToRadians(double degrees)
 {

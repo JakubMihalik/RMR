@@ -19,6 +19,7 @@ private:
     std::vector<LidarPoint> m_proccessedLidarPoints;
     LaserMeasurement m_lidar;
     Point m_position;
+    OdometryData m_robotInfo;
     Point m_destionationPosition;
 
 /* Methods */
@@ -27,7 +28,7 @@ private:
 
 public:
     void updateLidar(LaserMeasurement lidar);
-    void updatePosition(Point position);
+    void updateRobotState(OdometryData robotState);
     void proccess();
 };
 

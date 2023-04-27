@@ -11,6 +11,7 @@
 **/
 #include <cmath>
 #include "CKobuki.h"
+#include "types.h"
 /**
  * Global variables
 **/
@@ -18,27 +19,6 @@
 #define WHEEL_BASE_METES 0.23
 #define WHEEL_BASE_MILIMETERS 230.0
 #define DEG2RAD(d) (d * 3.1415926536 / 180.0)
-
-/**
- * Structure that holds all data
- * from odometry read
-**/
-typedef struct {
-    unsigned short leftWheelTicks;
-    unsigned short rightWheelTicks;
-    double distRightWheel;
-    double distLeftWheel;
-    double rotation;
-    double posX;
-    double posY;
-    double distance;
-    double deltaTheta;
-    int leftWheelOverflow;
-    int rightWheelOverflow;
-    int rDelta;
-    int lDelta;
-    double initRotation;
-} OdometryData;
 
 /**
  * Checkpoint structure structure

@@ -1,5 +1,8 @@
 #include "BugAlgorithm.h"
 #include <chrono>
+#include <algorithm>
+
+#define DEBUG
 
 BugAlgorithm::BugAlgorithm(Point destination)
 {
@@ -22,12 +25,27 @@ BugAlgorithm::~BugAlgorithm()
 void BugAlgorithm::proccess()
 {
     proccessLidar();
+
+    // Check if there's obstacle closer then safe distance in front of desired destination
+    int index = -1;
+    for (LidarPoint p : m_proccessedLidarPoints)
+    {
+        if (p.distance <= ROBOT_RADIUS_MM)
+        {
+            index = p.index;
+            break;
+        }
+    }
+    if (index != -1)
+    {
+        LidarPoint p = m_proccessedLidarPoints.at(index);
+        std::cout << "D, A = " << p.distance << ", " << p.angle << std::endl;
+    }
+
 }
 
 void BugAlgorithm::proccessLidar()
 {
-    auto start = std::chrono::high_resolution_clock::now();
-
     if (!m_proccessedLidarPoints.empty())
         m_proccessedLidarPoints.clear();
 
@@ -36,30 +54,34 @@ void BugAlgorithm::proccessLidar()
     {
         if (m_lidar.Data[i].scanDistance > 130 && m_lidar.Data[i].scanDistance < 3000.0)
         {
+            double robotAngle = m_robotInfo.rotation;
+            double rawAngle = 360.0 - m_lidar.Data[i].scanAngle;
+
             int index = i;
-            double x = m_position.x + (m_lidar.Data[i].scanDistance - ROBOT_RADIUS_MM) * std::cos(degreesToRadians(m_lidar.Data[i].scanAngle));
-            double y = m_position.y + (m_lidar.Data[i].scanDistance - ROBOT_RADIUS_MM) * std::sin(degreesToRadians(m_lidar.Data[i].scanAngle));
-            double angle = degreesToRadians(m_lidar.Data[i].scanAngle);
+            double angle = degreesToRadians(rawAngle + robotAngle);
             double distance = m_lidar.Data[i].scanDistance - ROBOT_RADIUS_MM;
+            double x = m_position.x + distance * std::cos(angle);
+            double y = m_position.y + distance * std::sin(angle);
             bool isColliding = false; // TODO: Collision detection
 
             m_proccessedLidarPoints.push_back({index, x, y, angle, distance, isColliding});
 
+#ifdef DEBUG
             m_lidarFile << x << "," << y << std::endl;
+#endif
         }
     }
+    // Sort lidar vector based on angle
+    std::sort(m_proccessedLidarPoints.begin(), m_proccessedLidarPoints.end(), [](LidarPoint& p1, LidarPoint& p2){return p1.angle < p2.angle;});
+}
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    std::cout << "Duration of function: " << duration.count() * 1000.0 << " ms" << std::endl;
+void BugAlgorithm::updateRobotState(OdometryData robotState)
+{
+    m_robotInfo = robotState;
+    m_position = {robotState.posX * 1000.0, robotState.posY * 1000.0};
 }
 
 void BugAlgorithm::updateLidar(LaserMeasurement lidar)
 {
     m_lidar = lidar;
-}
-
-void BugAlgorithm::updatePosition(Point position)
-{
-    m_position = position * 1000.0;
 }

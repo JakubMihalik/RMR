@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Constructor objects
     controller = new Controller(&robot, &odData, 0, 3);
     controller->checkpoints.push_back({4.5, 1.85});
-    controller->checkpoints.push_back({0.0, 3.0});
+//    controller->checkpoints.push_back({0.0, 3.0});
     bugAlg = new BugAlgorithm({4.5, 1.85});
 }
 
@@ -148,10 +148,10 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
 
     //Laser data processing
-    if (!controller->fRotating)
+    if (!controller->fRotating && !controller->b_finishReached)
     {
-        bugAlg->updatePosition({odData.posX, odData.posY});
         bugAlg->updateLidar(laserData);
+        bugAlg->updateRobotState(odData);
         bugAlg->proccess();
     }
     // End laser data processing
