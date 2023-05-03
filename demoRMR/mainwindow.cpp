@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
     pathPlanning = new PathPlanning(map, 6.0, 6.0, 0.05, -0.5, -0.5);
-    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 4.5, 1.85);
+    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 4.5, 2.05);
     std::cout << "Path planned whith " << points.size() << " checkpoints\n";
     map.close();
 

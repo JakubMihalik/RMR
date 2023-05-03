@@ -9,11 +9,11 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->fStopLidar = false;
     this->fRotating = false;
 
-    this->gainForward = 2000;
-    this->gainRotation = 10;
+    this->gainForward = 1000;
+    this->gainRotation = 5;
     this->rotConst = PI / 32;
-    this->fwdConst = 10;
-    this->forwardLimit = 1500;
+    this->fwdConst = 5;
+    this->forwardLimit = 1000;
     this->rotationLimit = PI / 2;
     this->accuracy = 0.03;
 
