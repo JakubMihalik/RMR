@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
 
-//    ipaddress="127.0.0.1";
-    ipaddress = "192.168.1.13";
+    ipaddress="127.0.0.1";
+//    ipaddress = "192.168.1.13";
 //    cap.open("http://192.168.1.11:8000/stream.mjpg");
 
     ui->setupUi(this);
@@ -188,8 +188,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
-
-
     memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
@@ -201,6 +199,37 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     {
         objDetect->writeLidarMap(lidarData, odData, laserData);
     }
+
+    // Totally primitive obstacle avoidance
+    if (laserData.Data[0].scanDistance <= 150)
+    {
+        int index = -1;
+        // Find first point with more space then some value
+        for (int i{laserData.numberOfScans-1}; i >= 0; i--)
+        {
+            if (laserData.Data[i].scanDistance > 300 && laserData.Data[i].scanDistance < 1500)
+            {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1)
+        {
+            std::queue<Point> newPoints;
+            double x = odData.posX + cos(360.0 - DEG2RAD(laserData.Data->scanAngle)) * 0.2;
+            double y = odData.posY + sin(360.0 - DEG2RAD(laserData.Data->scanAngle)) * 0.2;
+            newPoints.push({x, y});
+
+            while(!controller->checkpoints.empty())
+            {
+                newPoints.push(controller->checkpoints.front());
+                controller->checkpoints.pop();
+            }
+            controller->setCheckpoints(newPoints);
+            std::cout << "Added new point: [" << x << ", " << y << "]" << std::endl;
+        }
+    }
+
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
 
@@ -231,8 +260,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 
