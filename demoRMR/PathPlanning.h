@@ -9,7 +9,7 @@
 #define START  -1
 #define FINISH 2
 
-#define ROBOT_RADIUS 0.35
+#define ROBOT_RADIUS 0.45
 #define ROBOT_DIAMETER (ROBOT_RADIUS * 2)
 
 #define FILES_PATH "C:\\RMR_Files"

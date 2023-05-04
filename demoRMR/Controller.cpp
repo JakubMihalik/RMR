@@ -13,16 +13,16 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->gainRotation = 5;
     this->rotConst = PI / 32;
     this->fwdConst = 5;
-    this->forwardLimit = 1000;
+    this->forwardLimit = 1500;
     this->rotationLimit = PI / 2;
-    this->accuracy = 0.03;
+    this->accuracy = 0.1;
 
 #ifndef ENABLE_CHECKPOINTS
-    this->checkpoints.push({0, 3});
-    this->checkpoints.push({2.7, 3});
-    this->checkpoints.push({2.7, 0.4});
-    this->checkpoints.push({4.75, 0.4});
-    this->checkpoints.push({4.75, 1.9});
+    this->checkpoints.push({3.1, 0.0});
+    this->checkpoints.push({3.1, 1.7});
+    this->checkpoints.push({3.0, 1.8});
+    this->checkpoints.push({2.65, 2.3});
+    this->checkpoints.push({0.0, 2.3});
     std::cout << "Default checkpoints used. No dynamic calculation enabled...\n";
 #else
     std::cout << "Calculating checkpoints\n";
@@ -61,7 +61,7 @@ Controller::ControllerOutput Controller::regulate()
             this->fwdConst = 5;
             this->forwardLimit = 500;
             this->rotationLimit = PI / 3;
-            this->accuracy = 0.015;
+            this->accuracy = 0.05;
         }
 
         return controllerOutput;

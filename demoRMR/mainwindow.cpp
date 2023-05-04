@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
     pathPlanning = new PathPlanning(map, 6.0, 6.0, 0.05, -0.5, -0.5);
-    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 4.5, 2.05);
+    std::queue<Point> points = pathPlanning->createCheckpoints(0, 0, 0.0, 2.3);
     std::cout << "Path planned whith " << points.size() << " checkpoints\n";
     map.close();
 
@@ -262,8 +262,8 @@ void MainWindow::on_pushButton_9_clicked() //start button
 
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
-    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-//    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+//    robot.setCameraParameters("http://" + ipaddress + ":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://" + ipaddress + ":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.robotStart();
 
 

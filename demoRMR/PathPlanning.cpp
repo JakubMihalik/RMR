@@ -205,7 +205,7 @@ void PathPlanning::scaleObstacles()
 			{
 				// Zvacsujem stenu o polomer robota
 				int i = 0;
-				while (i < std::round(ROBOT_RADIUS / this->mapResolution))
+                while (i < std::round(ROBOT_RADIUS / this->mapResolution))
 				{
 					// Kontrola ci mozem zvacsit stenu
 					if ((x + i + 1) < this->width && this->occupancyMap[y][x + i + 1] == EMPTY)
@@ -233,7 +233,7 @@ void PathPlanning::scaleObstacles()
 			{
 				// Zvacsujem stenu o polomer robota
 				int i = 0;
-				while (i < std::round(ROBOT_RADIUS / this->mapResolution))
+                while (i < std::round(ROBOT_RADIUS / this->mapResolution))
 				{
 					// Kontrola ci mozem zvacsit stenu
 					if ((x - i - 1) > 0 && this->occupancyMap[y][x - i - 1] == EMPTY)
@@ -261,7 +261,7 @@ void PathPlanning::scaleObstacles()
 			{
 				// Zvacsujem stenu o polomer robota
 				int i = 0;
-				while (i < std::round(ROBOT_RADIUS / this->mapResolution))
+                while (i < std::round(ROBOT_RADIUS / this->mapResolution))
 				{
 					// Kontrola ci mozem zvacsit stenu
 					if ((y + i + 1) < this->height && this->occupancyMap[y + i + 1][x] == EMPTY)
@@ -289,7 +289,7 @@ void PathPlanning::scaleObstacles()
 			{
 				// Zvacsujem stenu o polomer robota
 				int i = 0;
-				while (i < std::round(ROBOT_RADIUS / this->mapResolution))
+                while (i < std::round(ROBOT_RADIUS / this->mapResolution))
 				{
 					// Kontrola ci mozem zvacsit stenu
 					if ((y - i - 1) >= 0 && this->occupancyMap[y - i - 1][x] == EMPTY)
@@ -366,7 +366,15 @@ void PathPlanning::floodFillQueue(int x, int y, int weight)
 		if (this->occupancyMap[front.y][front.x] == START) break;
 
 		weight = front.weight + 1;
-
+        if (front.x + 1 < this->width)
+        {
+            // Pridanie praveho suseda
+            if (this->occupancyMap[front.y][front.x + 1] == EMPTY)
+            {
+                this->occupancyMap[front.y][front.x + 1] = weight;
+                acumulator.push({ front.x + 1, front.y, weight });
+            }
+        }
 		if (front.y + 1 < this->height)
 		{
 			// Pridanie nizsieho suseda
@@ -383,15 +391,6 @@ void PathPlanning::floodFillQueue(int x, int y, int weight)
 			{
 				this->occupancyMap[front.y - 1][front.x] = weight;
 				acumulator.push({ front.x, front.y - 1, weight });
-			}
-		}
-		if (front.x + 1 < this->width)
-		{
-			// Pridanie praveho suseda
-			if (this->occupancyMap[front.y][front.x + 1] == EMPTY)
-			{
-				this->occupancyMap[front.y][front.x + 1] = weight;
-				acumulator.push({ front.x + 1, front.y, weight });
 			}
 		}
 		if (front.x - 1 >= 0)
@@ -426,26 +425,15 @@ std::queue<Point> PathPlanning::planPath(std::queue<Point>& waypoints)
 
 	while (!b_foundFinish)
 	{
-
-		// Check upper
-		if (y - 1 >= 0)
-		{
-			upper.weight = this->occupancyMap[y - 1][x];
-			upper.x = x;
-			upper.y = y - 1;
-
-			// Handle walls and start values on occupancy map
-			checkWeights(upper);
-		}
-		// Check lower
-		if (y + 1 < this->height)
-		{
-			lower.weight = this->occupancyMap[y + 1][x];
-			lower.x = x;
-			lower.y = y + 1;
-			// Handle walls and start values on occupancy map
-			checkWeights(lower);
-		}
+        // Check left
+        if (x - 1 >= 0)
+        {
+            left.weight = this->occupancyMap[y][x - 1];
+            left.x = x - 1;
+            left.y = y;
+            // Handle walls and start values on occupancy map
+            checkWeights(left);
+        }
 		// Check right
 		if (x + 1 < this->width)
 		{
@@ -454,17 +442,26 @@ std::queue<Point> PathPlanning::planPath(std::queue<Point>& waypoints)
 			right.y = y;
 			// Handle walls and start values on occupancy map
 			checkWeights(right);
-		}
-		// Check left
-		if (x - 1 >= 0)
-		{
-			left.weight = this->occupancyMap[y][x - 1];
-			left.x = x - 1;
-			left.y = y;
-			// Handle walls and start values on occupancy map
-			checkWeights(left);
-		}
+        }
+        // Check lower
+        if (y + 1 < this->height)
+        {
+            lower.weight = this->occupancyMap[y + 1][x];
+            lower.x = x;
+            lower.y = y + 1;
+            // Handle walls and start values on occupancy map
+            checkWeights(lower);
+        }
+        // Check upper
+        if (y - 1 >= 0)
+        {
+            upper.weight = this->occupancyMap[y - 1][x];
+            upper.x = x;
+            upper.y = y - 1;
 
+            // Handle walls and start values on occupancy map
+            checkWeights(upper);
+        }
 		// Find minimum
 		Neighbour min = PathPlanning::findMinNeighbour(upper, lower, left, right);
 
