@@ -29,7 +29,7 @@ private:
 public:
     void updateLidar(LaserMeasurement lidar);
     void updateRobotState(OdometryData robotState);
-    void proccess();
+    void proccess(std::vector<Point>& checkpoints);
 };
 
 #endif // BUGALGORITHM_H

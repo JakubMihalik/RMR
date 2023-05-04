@@ -77,15 +77,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
         if(updateLaserPicture==1)
         {
             updateLaserPicture=0;
-
+            pero.setColor(Qt::green);
             painter.setPen(pero);
-            //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
-         //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
-                /*  int dist=rand()%500;
-            int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-k)*3.14159/180.0))+rect.topLeft().x();
-            int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-k)*3.14159/180.0))+rect.topLeft().y();*/
                 int dist=copyOfLaserData.Data[k].scanDistance/20;
                 int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x();
                 int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();
@@ -152,7 +147,7 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     {
         bugAlg->updateLidar(laserData);
         bugAlg->updateRobotState(odData);
-        bugAlg->proccess();
+        bugAlg->proccess(controller->checkpoints);
     }
     // End laser data processing
 

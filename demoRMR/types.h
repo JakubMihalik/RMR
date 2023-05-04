@@ -3,8 +3,8 @@
 
 #include <fstream>
 
-#define ROBOT_RADIUS_MM    350
-#define ROBOT_RADIUS_M     0.35
+#define ROBOT_RADIUS_MM    180
+#define ROBOT_RADIUS_M    (ROBOT_RADIUS_MM / 1000.0)
 #define ROBOT_DIAMETER_MM (2 * ROBOT_RADIUS_MM)
 #define ROBOT_DIAMETER_M  (2 * ROBOT_RADIUS_M)
 

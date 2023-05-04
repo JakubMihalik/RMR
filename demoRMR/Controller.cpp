@@ -101,6 +101,7 @@ ErrorValue Controller::calculateErrors()
         eTheta += 2*PI;
     }
     ErrorValue e = {eX, eY, eTheta};
+//    std::cout << "Going for point: " << checkpoints.back().x << ", " << checkpoints.back().y << std::endl;
     return e;
 }
 
