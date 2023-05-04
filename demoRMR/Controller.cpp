@@ -22,7 +22,7 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->checkpoints.push({2.7, 3});
     this->checkpoints.push({2.7, 0.4});
     this->checkpoints.push({4.75, 0.4});
-    this->checkpoints.push({4.75, 1.8});
+    this->checkpoints.push({4.75, 1.9});
     std::cout << "Default checkpoints used. No dynamic calculation enabled...\n";
 #else
     std::cout << "Calculating checkpoints\n";

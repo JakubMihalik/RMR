@@ -201,6 +201,7 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     }
 
     // Totally primitive obstacle avoidance
+    /*
     if (laserData.Data[0].scanDistance <= 150)
     {
         int index = -1;
@@ -229,6 +230,7 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
             std::cout << "Added new point: [" << x << ", " << y << "]" << std::endl;
         }
     }
+    */
 
 //    objDetect->avoidObstacles(laserData, odData, controller->checkpoints);
     // End laser data processing
