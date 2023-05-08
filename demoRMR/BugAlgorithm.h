@@ -16,6 +16,7 @@ public:
 private:
     std::ofstream m_obstaclePointsFile;
     std::ofstream m_lidarFile;
+    std::ofstream m_selectedPointsFile;
     std::vector<LidarPoint> m_proccessedLidarPoints;
     LaserMeasurement m_lidar;
     Point m_position;

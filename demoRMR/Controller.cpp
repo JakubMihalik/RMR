@@ -38,6 +38,7 @@ ControllerOutput Controller::regulate()
         if (this->checkpoints.size() > 1)
         {
             this->checkpoints.pop_back();
+            std::cout << "Checkpoint reached. Poping out..." << std::endl;
         }
         else
         {
@@ -77,10 +78,10 @@ ControllerOutput Controller::regulate()
     double radius = controllerOutput.forwardSpeed / denom;
 
     // Set stop lidar flag
-    this->fStopLidar = abs(denom) > 1.0; // Toto osetrit nie na radar ale na to co robot robi
+    this->fStopLidar = abs(controllerOutput.rotationSpeed) >= PI / 12; // Toto osetrit nie na radar ale na to co robot robi
 
     // Set rotation flag
-    this->fRotating = abs(controllerOutput.rotationSpeed) >= PI / 6;
+    this->fRotating = abs(controllerOutput.rotationSpeed) >= PI / 12;
 
     robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
 

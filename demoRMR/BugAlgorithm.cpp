@@ -10,6 +10,7 @@ BugAlgorithm::BugAlgorithm(Point destination)
     m_destionationPosition = destination;
     m_obstaclePointsFile.open("C:\\RMR_Files\\bugAlg\\obstacle_points.csv");
     m_lidarFile.open("C:\\RMR_Files\\bugAlg\\lidar_points.csv");
+    m_selectedPointsFile.open("C:\\RMR_Files\\bugAlg\\selected_points.csv");
 }
 
 BugAlgorithm::~BugAlgorithm()
@@ -18,9 +19,15 @@ BugAlgorithm::~BugAlgorithm()
 
     if (m_obstaclePointsFile.is_open())
         m_obstaclePointsFile.close();
+    std::cout << "Points file closed" << std::endl;
 
     if (m_lidarFile.is_open())
         m_lidarFile.close();
+    std::cout << "Lidar file closed" << std::endl;
+
+    if (m_selectedPointsFile.is_open())
+        m_selectedPointsFile.close();
+    std::cout << "Selected points file closed" << std::endl;
 }
 
 void BugAlgorithm::proccess(std::vector<Point>& checkpoints)
@@ -29,28 +36,31 @@ void BugAlgorithm::proccess(std::vector<Point>& checkpoints)
 
     // Check if there's obstacle closer then safe distance in front of desired destination
     double range = 90.0;
-    int index = -1;
-    std::vector<LidarPoint> viewPoints;
+    LidarPoint maxDistance = {-1, -DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX, false};
+    bool danger = false;
+    int dangerCounts = 0;
     for (LidarPoint p : m_proccessedLidarPoints)
     {
         // Check if point is from range (0-45) and in the other way (360 - 315)
         bool b_firstQuadrant = p.angle < degreesToRadians(range);
         bool b_fourthQuadrant = p.angle < degreesToRadians(360.0) && p.angle > degreesToRadians(360.0 - range);
         // If its in defined range then check if distance is less then safe distance
-        if ((b_firstQuadrant || b_fourthQuadrant) && p.distance <= ROBOT_DIAMETER_MM)
+        if ((b_firstQuadrant || b_fourthQuadrant) && p.distance - ROBOT_RADIUS_M <= ROBOT_DIAMETER_M)
         {
             // Todo avoidance couse we are heading toward obstacle
-            m_lidarFile << "X:" << p.x << "\tY:" << p.y << "\tAngle:" << radiansToDegrees(p.angle) << std::endl;
-            viewPoints.push_back(p);
+            danger = true;
+            dangerCounts++;
+            if (p.distance > maxDistance.distance)
+            {
+                maxDistance = p;
+            }
         }
     }
     // Find largest distance in view angle
-    if (!viewPoints.empty())
+    if (danger && dangerCounts > 3)
     {
-        LidarPoint p = *std::max_element(viewPoints.begin(), viewPoints.end(), [](const LidarPoint& p1, const LidarPoint& p2){return p1.distance < p2.distance;});
-        // Push new chekpoint
-        checkpoints.push_back({p.x / 1000.0, p.y / 1000.0});
-        std::cout << "Pushed: " << checkpoints.back().x << ", " << checkpoints.back().y << std::endl;
+        checkpoints.push_back({maxDistance.x, maxDistance.y});
+        m_selectedPointsFile << checkpoints.back().x << "," << checkpoints.back().y << std::endl;
     }
 }
 
@@ -59,20 +69,21 @@ void BugAlgorithm::proccessLidar()
     if (!m_proccessedLidarPoints.empty())
         m_proccessedLidarPoints.clear();
 
-    // Convert lidar data to vector with distance preprocessing
+    // Convert lidar data to vector
     for (int i{0}; i < m_lidar.numberOfScans; i++)
     {
         if (m_lidar.Data[i].scanDistance > 130 && m_lidar.Data[i].scanDistance < 3000.0)
         {
-            double rawAngle = 360.0 - m_lidar.Data[i].scanAngle;
-
             int index = i;
-            double angle = degreesToRadians(rawAngle);
-            double distance = m_lidar.Data[i].scanDistance - ROBOT_RADIUS_MM;
-            double x = m_position.x + distance * std::cos(angle);
-            double y = m_position.y + distance * std::sin(angle);
+            double robotAngle = degreesToRadians(m_robotInfo.rotation);
+            double angle = degreesToRadians(360.0 - m_lidar.Data[i].scanAngle);
+            double distance = m_lidar.Data[i].scanDistance / 1000.0; // Distance is in meters
+            double x = m_position.x + distance * std::cos(angle + robotAngle);
+            double y = m_position.y + distance * std::sin(angle + robotAngle);
+
             bool isColliding = false; // TODO: Collision detection
 
+            m_lidarFile << x << "," << y << "," << angle + robotAngle << std::endl;
             m_proccessedLidarPoints.push_back({index, x, y, angle, distance, isColliding});
         }
     }
@@ -83,7 +94,7 @@ void BugAlgorithm::proccessLidar()
 void BugAlgorithm::updateRobotState(OdometryData robotState)
 {
     m_robotInfo = robotState;
-    m_position = {robotState.posX * 1000.0, robotState.posY * 1000.0};
+    m_position = {robotState.posX, robotState.posY};
 }
 
 void BugAlgorithm::updateLidar(LaserMeasurement lidar)

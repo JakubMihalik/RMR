@@ -136,8 +136,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
-
-
     memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
@@ -145,8 +143,8 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
     //Laser data processing
     if (!controller->fRotating && !controller->b_finishReached)
     {
-        bugAlg->updateLidar(laserData);
         bugAlg->updateRobotState(odData);
+        bugAlg->updateLidar(laserData);
         bugAlg->proccess(controller->checkpoints);
     }
     // End laser data processing
@@ -166,6 +164,7 @@ int MainWindow::processThisCamera(cv::Mat cameraData)
     updateLaserPicture=1;
     return 0;
 }
+
 void MainWindow::on_pushButton_9_clicked() //start button
 {
 
