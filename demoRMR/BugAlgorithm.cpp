@@ -85,7 +85,7 @@ void BugAlgorithm::proccess(std::vector<Point>& checkpoints)
         {
             bool b_upperBound = m_lidar.Data[i].scanAngle < rotation + 5.0;
             bool b_lowerBound = m_lidar.Data[i].scanAngle > rotation - 5.0;
-            bool b_distanceBound = m_lidar.Data[i].scanDistance > 1500;
+            bool b_distanceBound = m_lidar.Data[i].scanDistance > 2500;
 
             if (b_upperBound && b_lowerBound && b_distanceBound)
             {

@@ -123,12 +123,12 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     LaserData right = lidar.Data[(int)(lidar.numberOfScans * (3.0 / 4.0))];
     LaserData left = lidar.Data[(int)(lidar.numberOfScans * (1.0 / 4.0))];
 
-    const static double desiredDistance = ROBOT_DIAMETER_MM;
+    const static double desiredDistance = ROBOT_DIAMETER_MM + ROBOT_RADIUS_MM / 2;
     const static int speed = 150;
     const static int radius = ROBOT_RADIUS_MM / 3;
     const static double threshold = 100;
 
-    if (front.scanDistance < desiredDistance + threshold) // Ak je pred nami stena
+    if (front.scanDistance < desiredDistance / 2) // Ak je pred nami stena
     {
         /*if (left.scanDistance < desiredDistance) // Ak je stena na lavo
         {
