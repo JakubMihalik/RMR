@@ -39,6 +39,7 @@ public:
     std::atomic<bool> fStopLidar;
     std::atomic<bool> fRotating;
     bool b_finishReached = false;
+    ControllerOutput controllerOutput;
 
 /** Public methods **/
 public:

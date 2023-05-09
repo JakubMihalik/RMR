@@ -9,6 +9,7 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->desiredY = desiredY;
     this->fStopLidar = false;
     this->fRotating = false;
+    this->controllerOutput = {0.0, 0.0, 0.0};
 }
 
 Controller::~Controller()
@@ -20,7 +21,6 @@ Controller::~Controller()
 ControllerOutput Controller::regulate()
 {
     ErrorValue ev = Controller::calculateErrors();
-    static ControllerOutput controllerOutput;
 
     double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
     double reqFwdSpeed = 1000 * distance;
@@ -113,9 +113,12 @@ void Controller::setCheckpoints(std::vector<Point>& checkpoints)
 
 void Controller::regulateDynamic(LaserMeasurement lidar)
 {
-    // We get 4 points from lidar (front, left, right, rear) that we will use to follow wall
+    /** Zaporna hodnota RADIUS toci smerom do lava
+     *  Zatacanie do lava (ku stene pre pravy senzor) (-) zaporna hodnota
+     *  Zatacanie do prava (od steny pre pravy senzor)(+) kladna hodnota
+    **/
+
     LaserData front = lidar.Data[lidar.numberOfScans - 1];
-//    LaserData rear = lidar.Data[(int)(lidar.numberOfScans / 2)];
     LaserData right = lidar.Data[(int)(lidar.numberOfScans * (3.0 / 4.0))];
     LaserData left = lidar.Data[(int)(lidar.numberOfScans * (1.0 / 4.0))];
 
@@ -124,54 +127,61 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     const static int radius = ROBOT_RADIUS_MM / 2;
     const static double threshold = 100;
 
-//    bool b_frontSensor = front.scanDistance != 0 && front.scanDistance < desiredDistance;
-//    bool b_leftSensor = left.scanDistance != 0 && left.scanDistance < desiredDistance;
-//    bool b_rightSensor = right.scanDistance != 0 && right.scanDistance < desiredDistance;
-
-    // Zaporna hodnota RADIUS toci smerom do lava
-
-    if (front.scanDistance < desiredDistance - threshold)
+    if (front.scanDistance < desiredDistance && (left.scanDistance > desiredDistance && right.scanDistance > desiredDistance)) // Ak je pred nami stena
     {
-        // Move away from wall
-//            this->robot->setRotationSpeed(PI / 4);
-        turnRight(speed, radius);
-        std::cout << "Wall in front - rotating right" << std::endl;
+        if (left.scanDistance < desiredDistance) // Ak je stena na lavo
+        {
+            turnLeft(speed, radius);
+        }
+        else // Ak je stena na pravo
+        {
+            turnRight(speed, radius);
+        }
     }
     else
     {
-        // If right side is too close to wall
-        if (right.scanDistance < desiredDistance - threshold)
+        if (left.scanDistance < right.scanDistance) // Ak je stane na lavo
         {
-            // Move away from wall
-            this->robot->setRotationSpeed(PI / 4);
-//                turnRight(speed, radius);
-            std::cout << "Wall too close" << std::endl;
+            if (left.scanDistance > desiredDistance + threshold) // Too far from wall
+            {
+                turnLeft(speed, radius);
+            }
+            else if (left.scanDistance < desiredDistance) // Too close to wall
+            {
+                turnRight(speed, radius);
+            }
+            else // In range
+            {
+                moveForward(speed);
+            }
         }
-        // If right side is too far from wall
-        else if (right.scanDistance > desiredDistance + threshold)
+        else // Ak je stena na pravo
         {
-            // Move toward wall
-            this->robot->setRotationSpeed(-PI / 4);
-//                turnLeft(speed, radius);
-            std::cout << "Wall too far away" << std::endl;
-        }
-        // Else move forward
-        else
-        {
-            this->robot->setTranslationSpeed(speed);
-            std::cout << "Moving forward" << std::endl;
+            if (right.scanDistance > desiredDistance + threshold) // Too far from wall
+            {
+                turnRight(speed, radius);
+            }
+            else if (right.scanDistance < desiredDistance) // Too close to wall
+            {
+                turnLeft(speed, radius);
+            }
+            else // In range
+            {
+                moveForward(speed);
+            }
         }
     }
-    }
+
+}
 
 void Controller::turnLeft(int speed, int radius)
 {
-    robot->setArcSpeed(speed, -radius);
+    robot->setArcSpeed(speed, radius);
 }
 
 void Controller::turnRight(int speed, int radius)
 {
-    robot->setArcSpeed(speed, radius);
+    robot->setArcSpeed(speed, -radius);
 }
 
 void Controller::moveForward(int speed)
