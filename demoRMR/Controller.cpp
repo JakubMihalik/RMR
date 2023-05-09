@@ -110,3 +110,71 @@ void Controller::setCheckpoints(std::vector<Point>& checkpoints)
 {
     this->checkpoints = std::move(checkpoints);
 }
+
+void Controller::regulateDynamic(LaserMeasurement lidar)
+{
+    // We get 4 points from lidar (front, left, right, rear) that we will use to follow wall
+    LaserData front = lidar.Data[lidar.numberOfScans - 1];
+//    LaserData rear = lidar.Data[(int)(lidar.numberOfScans / 2)];
+    LaserData right = lidar.Data[(int)(lidar.numberOfScans * (3.0 / 4.0))];
+    LaserData left = lidar.Data[(int)(lidar.numberOfScans * (1.0 / 4.0))];
+
+    const static double desiredDistance = ROBOT_DIAMETER_MM;
+    const static int speed = 150;
+    const static int radius = ROBOT_RADIUS_MM / 2;
+    const static double threshold = 100;
+
+//    bool b_frontSensor = front.scanDistance != 0 && front.scanDistance < desiredDistance;
+//    bool b_leftSensor = left.scanDistance != 0 && left.scanDistance < desiredDistance;
+//    bool b_rightSensor = right.scanDistance != 0 && right.scanDistance < desiredDistance;
+
+    // Zaporna hodnota RADIUS toci smerom do lava
+
+    if (front.scanDistance < desiredDistance - threshold)
+    {
+        // Move away from wall
+//            this->robot->setRotationSpeed(PI / 4);
+        turnRight(speed, radius);
+        std::cout << "Wall in front - rotating right" << std::endl;
+    }
+    else
+    {
+        // If right side is too close to wall
+        if (right.scanDistance < desiredDistance - threshold)
+        {
+            // Move away from wall
+            this->robot->setRotationSpeed(PI / 4);
+//                turnRight(speed, radius);
+            std::cout << "Wall too close" << std::endl;
+        }
+        // If right side is too far from wall
+        else if (right.scanDistance > desiredDistance + threshold)
+        {
+            // Move toward wall
+            this->robot->setRotationSpeed(-PI / 4);
+//                turnLeft(speed, radius);
+            std::cout << "Wall too far away" << std::endl;
+        }
+        // Else move forward
+        else
+        {
+            this->robot->setTranslationSpeed(speed);
+            std::cout << "Moving forward" << std::endl;
+        }
+    }
+    }
+
+void Controller::turnLeft(int speed, int radius)
+{
+    robot->setArcSpeed(speed, -radius);
+}
+
+void Controller::turnRight(int speed, int radius)
+{
+    robot->setArcSpeed(speed, radius);
+}
+
+void Controller::moveForward(int speed)
+{
+    robot->setTranslationSpeed(speed);
+}

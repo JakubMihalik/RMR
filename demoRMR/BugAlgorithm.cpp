@@ -11,6 +11,8 @@ BugAlgorithm::BugAlgorithm(Point destination)
     m_obstaclePointsFile.open("C:\\RMR_Files\\bugAlg\\obstacle_points.csv");
     m_lidarFile.open("C:\\RMR_Files\\bugAlg\\lidar_points.csv");
     m_selectedPointsFile.open("C:\\RMR_Files\\bugAlg\\selected_points.csv");
+
+    isWallFollowing = false;
 }
 
 BugAlgorithm::~BugAlgorithm()
@@ -39,28 +41,61 @@ void BugAlgorithm::proccess(std::vector<Point>& checkpoints)
     LidarPoint maxDistance = {-1, -DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX, false};
     bool danger = false;
     int dangerCounts = 0;
-    for (LidarPoint p : m_proccessedLidarPoints)
+
+    if (!this->isWallFollowing)
     {
-        // Check if point is from range (0-45) and in the other way (360 - 315)
-        bool b_firstQuadrant = p.angle < degreesToRadians(range);
-        bool b_fourthQuadrant = p.angle < degreesToRadians(360.0) && p.angle > degreesToRadians(360.0 - range);
-        // If its in defined range then check if distance is less then safe distance
-        if ((b_firstQuadrant || b_fourthQuadrant) && p.distance - ROBOT_RADIUS_M <= ROBOT_DIAMETER_M)
+        for (LidarPoint p : m_proccessedLidarPoints)
         {
-            // Todo avoidance couse we are heading toward obstacle
-            danger = true;
-            dangerCounts++;
-            if (p.distance > maxDistance.distance)
+            // Check if point is from range and in the other way
+            bool b_firstQuadrant = p.angle < degreesToRadians(range);
+            bool b_fourthQuadrant = p.angle < degreesToRadians(360.0) && p.angle > degreesToRadians(360.0 - range);
+
+            // If its in defined range then check if distance is less then safe distance
+            if ((b_firstQuadrant || b_fourthQuadrant) && p.distance - ROBOT_RADIUS_M <= ROBOT_DIAMETER_M)
             {
-                maxDistance = p;
+                // Todo avoidance couse we are heading toward obstacle
+                danger = true;
+                dangerCounts++;
+                if (p.distance > maxDistance.distance)
+                {
+                    maxDistance = p;
+                }
             }
         }
+        // Simple filter
+        if (danger && dangerCounts > 5)
+        {
+//            checkpoints.push_back({maxDistance.x, maxDistance.y});
+//            m_selectedPointsFile << checkpoints.back().x << "," << checkpoints.back().y << std::endl;
+            this->isWallFollowing = true;
+        }
     }
-    // Find largest distance in view angle
-    if (danger && dangerCounts > 3)
+    else // We are following wall
     {
-        checkpoints.push_back({maxDistance.x, maxDistance.y});
-        m_selectedPointsFile << checkpoints.back().x << "," << checkpoints.back().y << std::endl;
+        // Check if we can go to the finish
+        double headingAngle = atan2(m_destionationPosition.y - m_position.y, m_destionationPosition.x - m_position.x);
+        double headingAngleDeg = radiansToDegrees(headingAngle);
+
+        double robotRotation = m_robotInfo.rotation;
+        double rotation = headingAngleDeg + robotRotation;
+
+        int freeWaysCount = 0;
+
+        for (int i{0}; i < m_lidar.numberOfScans; i++)
+        {
+            bool b_upperBound = m_lidar.Data[i].scanAngle < rotation + 5.0;
+            bool b_lowerBound = m_lidar.Data[i].scanAngle > rotation - 5.0;
+            bool b_distanceBound = m_lidar.Data[i].scanDistance > 2 * ROBOT_DIAMETER_MM;
+
+            if (b_upperBound && b_lowerBound && b_distanceBound)
+            {
+                freeWaysCount++;
+            }
+        }
+        if (freeWaysCount > 3)
+        {
+            this->isWallFollowing = false;
+        }
     }
 }
 
@@ -100,4 +135,9 @@ void BugAlgorithm::updateRobotState(OdometryData robotState)
 void BugAlgorithm::updateLidar(LaserMeasurement lidar)
 {
     m_lidar = lidar;
+}
+
+LaserMeasurement BugAlgorithm::getLidarData()
+{
+    return m_lidar;
 }

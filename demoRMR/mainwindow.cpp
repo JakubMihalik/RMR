@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Constructor objects
-    controller = new Controller(&robot, &odData, 0, 3);
+    controller = new Controller(&robot, &odData, 4.5, 1.8);
     controller->checkpoints.push_back({4.5, 1.85});
 //    controller->checkpoints.push_back({0.0, 3.0});
     bugAlg = new BugAlgorithm({4.5, 1.85});
@@ -121,7 +121,14 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     if (!controller->b_finishReached)
     {
         control->readOdometry(robotdata, &odData, controller->fStopLidar);
-        controller->regulate();
+        if (bugAlg->isWallFollowing)
+        {
+            controller->regulateDynamic(bugAlg->getLidarData());
+        }
+        else
+        {
+            controller->regulate();
+        }
     }
 
     if(datacounter%5)

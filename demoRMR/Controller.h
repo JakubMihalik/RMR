@@ -44,10 +44,14 @@ public:
 public:
     ErrorValue calculateErrors();
     ControllerOutput regulate();
-    void regulateDynamic();
+    void regulateDynamic(LaserMeasurement lidar);
     void setCheckpoints(std::vector<Point>& checkpoints);
     void followWall();
     void updateLidarData(LaserMeasurement laser);
+    void turnLeft(int speed, int radius);
+    void turnRight(int speed, int radius);
+    void moveForward(int speed);
+
 };
 
 #endif // CONTROLLER_H

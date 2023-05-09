@@ -22,6 +22,8 @@ private:
     Point m_position;
     OdometryData m_robotInfo;
     Point m_destionationPosition;
+public:
+    std::atomic_bool isWallFollowing;
 
 /* Methods */
 private:
@@ -31,6 +33,7 @@ public:
     void updateLidar(LaserMeasurement lidar);
     void updateRobotState(OdometryData robotState);
     void proccess(std::vector<Point>& checkpoints);
+    LaserMeasurement getLidarData();
 };
 
 #endif // BUGALGORITHM_H
