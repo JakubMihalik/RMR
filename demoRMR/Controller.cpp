@@ -7,6 +7,7 @@ Controller::Controller(Robot* robot, OdometryData* odData, double desiredX, doub
     this->odData = odData;
     this->desiredX = desiredX;
     this->desiredY = desiredY;
+    this->checkpoints.push_back({desiredX, desiredY});
     this->fStopLidar = false;
     this->fRotating = false;
     this->controllerOutput = {0.0, 0.0, 0.0};
@@ -124,18 +125,26 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
 
     const static double desiredDistance = ROBOT_DIAMETER_MM;
     const static int speed = 150;
-    const static int radius = ROBOT_RADIUS_MM / 2;
+    const static int radius = ROBOT_RADIUS_MM / 3;
     const static double threshold = 100;
 
-    if (front.scanDistance < desiredDistance && (left.scanDistance > desiredDistance && right.scanDistance > desiredDistance)) // Ak je pred nami stena
+    if (front.scanDistance < desiredDistance + threshold) // Ak je pred nami stena
     {
-        if (left.scanDistance < desiredDistance) // Ak je stena na lavo
+        /*if (left.scanDistance < desiredDistance) // Ak je stena na lavo
         {
             turnLeft(speed, radius);
         }
         else // Ak je stena na pravo
         {
             turnRight(speed, radius);
+        }*/
+        if (left.scanDistance < right.scanDistance) // Ak je lava stena blizsie
+        {
+            turnRight(speed, radius);
+        }
+        else // Ak je prava stena blizsie
+        {
+            turnLeft(speed, radius);
         }
     }
     else
@@ -144,7 +153,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
         {
             if (left.scanDistance > desiredDistance + threshold) // Too far from wall
             {
-                turnLeft(speed, radius);
+                turnLeft(speed, radius * 2);
             }
             else if (left.scanDistance < desiredDistance) // Too close to wall
             {
@@ -159,7 +168,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
         {
             if (right.scanDistance > desiredDistance + threshold) // Too far from wall
             {
-                turnRight(speed, radius);
+                turnRight(speed, radius * 2);
             }
             else if (right.scanDistance < desiredDistance) // Too close to wall
             {
@@ -186,5 +195,5 @@ void Controller::turnRight(int speed, int radius)
 
 void Controller::moveForward(int speed)
 {
-    robot->setTranslationSpeed(speed);
+    robot->setArcSpeed(speed, 0);
 }

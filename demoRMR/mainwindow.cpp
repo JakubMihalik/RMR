@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
 
     // Constructor objects
-    controller = new Controller(&robot, &odData, 4.5, 1.8);
-    controller->checkpoints.push_back({4.5, 1.85});
+    controller = new Controller(&robot, &odData, 4.5, 1.2);
+//    controller->checkpoints.push_back({4.5, 1.85});
 //    controller->checkpoints.push_back({0.0, 3.0});
     bugAlg = new BugAlgorithm({4.5, 1.85});
 }
