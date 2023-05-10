@@ -119,6 +119,8 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
      *  Zatacanie do prava (od steny pre pravy senzor)(+) kladna hodnota
     **/
 
+    const static double desiredDistance = ROBOT_DIAMETER_MM * 5;
+
     // Find closest point
     LaserData point = {1, 0, DBL_MAX};
     for (int i{0}; i < lidar.numberOfScans; i++)
@@ -130,6 +132,12 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
             {
                 point = lidar.Data[i];
 //                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
+
+                // Upravime uhol na rozsah -180 az 180
+//                if (point.scanAngle > 180)
+//                {
+//                    point.scanAngle = 360 - point.scanAngle;
+//                }
             }
         }
     }
@@ -149,15 +157,22 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
 
         // Otocime vektor o 90 stupnov [mm]
         Point rotatedVector = {vector.x * std::cos(PI/2) - vector.y * std::sin(PI/2),
-                               vector.x * std::cos(PI/2) + vector.y * std::cos(PI/2)};
+                               vector.x * std::sin(PI/2) + vector.y * std::cos(PI/2)};
+
+        // Nascaleujeme vektor o pozadovanu vzdialenost
+        Point scaledVector = {rotatedVector.x * desiredDistance / point.scanDistance,
+                              rotatedVector.y * desiredDistance / point.scanDistance};
 
         // Vypocitame bod na sledovanie [mm]
-        double pointX = odData->posX + rotatedVector.x;
-        double pointY = odData->posY + rotatedVector.y;
+        double pointX = odData->posX + scaledVector.x;
+        double pointY = odData->posY + scaledVector.y;
 
         // Vypocitame uhol a vzdialenost bodu kvoli vykreslovaniu
         m_angle = radiansToDegrees(atan2(odData->posY - pointY, odData->posX - pointX));
         m_distance = std::sqrt(std::pow(odData->posX - pointX, 2) + std::pow(odData->posY - pointY, 2));
+//        m_angle = radiansToDegrees(point.scanAngle);
+//        m_distance = 500;
+
 
         // A prevedieme na metre
         pointX /= 1000.0;
