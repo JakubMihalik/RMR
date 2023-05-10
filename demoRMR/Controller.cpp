@@ -142,7 +142,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
 
     if (point.scanDistance != DBL_MAX)
     {
-        /*const static*/ double desiredDistance = point.scanDistance + ROBOT_DIAMETER_MM;
+        /*const static*/ double desiredDistance = point.scanDistance + 2 * ROBOT_DIAMETER_MM;
 
         std::cout << "Found point: " << point.scanAngle << std::endl;
         std::cout << "With distance: " << point.scanDistance << std::endl;
@@ -258,14 +258,14 @@ void Controller::regulateWallFollow(double reqX, double reqY)
         this->fStopLidar = false;
     }
 
-//    if (reqRotSpeed / 5 > PI / 2)
-//    {
-//        robot->setRotationSpeed(PI / 6);
-//    }
-//    else
-//    {
+    if (abs(reqRotSpeed/5) > PI / 4)
+    {
+        robot->setRotationSpeed((reqRotSpeed > 0 ? 1 : -1) * PI / 6);
+    }
+    else
+    {
         robot->setArcSpeed(controllerOutput.forwardSpeed, max(min(radius, INT_MAX), -INT_MAX));
-//    }
+    }
 
     // Vypis
     std::cout << "Request: [" << reqX << ", " << reqY << "]" << std::endl;
