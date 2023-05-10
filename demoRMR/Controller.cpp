@@ -119,68 +119,45 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
      *  Zatacanie do prava (od steny pre pravy senzor)(+) kladna hodnota
     **/
 
-    LaserData front = lidar.Data[lidar.numberOfScans - 1];
-    LaserData right = lidar.Data[(int)(lidar.numberOfScans * (3.0 / 4.0))];
-    LaserData left = lidar.Data[(int)(lidar.numberOfScans * (1.0 / 4.0))];
-
-    const static double desiredDistance = ROBOT_DIAMETER_MM + ROBOT_RADIUS_MM / 2;
-    const static int speed = 150;
-    const static int radius = ROBOT_RADIUS_MM / 3;
-    const static double threshold = 100;
-
-    if (front.scanDistance < desiredDistance / 2) // Ak je pred nami stena
+    // Find closest point
+    LaserData point = {1, 0, DBL_MAX};
+    for (int i{0}; i < lidar.numberOfScans; i++)
     {
-        /*if (left.scanDistance < desiredDistance) // Ak je stena na lavo
+        if (lidar.Data[i].scanDistance > 130 && lidar.Data[i].scanDistance < 3000)
         {
-            turnLeft(speed, radius);
-        }
-        else // Ak je stena na pravo
-        {
-            turnRight(speed, radius);
-        }*/
-        if (left.scanDistance < right.scanDistance) // Ak je lava stena blizsie
-        {
-            turnRight(speed, radius);
-        }
-        else // Ak je prava stena blizsie
-        {
-            turnLeft(speed, radius);
-        }
-    }
-    else
-    {
-        if (left.scanDistance < right.scanDistance) // Ak je stane na lavo
-        {
-            if (left.scanDistance > desiredDistance + threshold) // Too far from wall
-            {
-                turnLeft(speed, radius * 2);
-            }
-            else if (left.scanDistance < desiredDistance) // Too close to wall
-            {
-                turnRight(speed, radius);
-            }
-            else // In range
-            {
-                moveForward(speed);
-            }
-        }
-        else // Ak je stena na pravo
-        {
-            if (right.scanDistance > desiredDistance + threshold) // Too far from wall
-            {
-                turnRight(speed, radius * 2);
-            }
-            else if (right.scanDistance < desiredDistance) // Too close to wall
-            {
-                turnLeft(speed, radius);
-            }
-            else // In range
-            {
-                moveForward(speed);
-            }
+//            if (lidar.Data[i].scanAngle <= 90 || lidar.Data[i].scanAngle >= 270)
+//            {
+                if (lidar.Data[i].scanDistance < point.scanDistance)
+                {
+                    point = lidar.Data[i];
+                }
+//            }
         }
     }
 
+    if (point.scanDistance != DBL_MAX)
+    {
+        double angleShift = (-90) + (point.scanDistance - ROBOT_DIAMETER_MM) / 5;
+        double distance = point.scanDistance > 600 ? point.scanDistance : 600;
+        double angle = point.scanAngle + angleShift;
+        angle = angle > 180 ? angle - 360 : angle < -180 ? angle + 360 : angle;
+
+        // Transform angle 90 degree
+        double pointX = this->odData->posX + (point.scanDistance / 1000) * std::cos(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
+        double pointY = this->odData->posY + (point.scanDistance / 1000) * std::sin(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
+
+        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+
+        // Add new checkpoint
+        if (checkpoints.size() < 2)
+        {
+            checkpoints.push_back({reqX, reqY});
+            std::cout << "Found point: " << point.scanAngle << "d " << point.scanDistance << "mm\n";
+            std::cout << "X, Y: " << pointX << "m " << pointY << "m\n";
+            std::cout << "Added [" << reqX << ", " << reqY << "]\n" << std::endl;
+        }
+    }
 }
 
 void Controller::turnLeft(int speed, int radius)

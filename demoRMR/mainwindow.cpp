@@ -121,18 +121,18 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     if (!controller->b_finishReached)
     {
         control->readOdometry(robotdata, &odData, controller->fStopLidar);
-        if (bugAlg->isWallFollowing)
-        {
-            controller->controllerOutput.forwardSpeed = 0;
-            controller->controllerOutput.rotationSpeed = 0;
-            controller->controllerOutput.reached = 0;
+//        if (bugAlg->isWallFollowing)
+//        {
+//            controller->controllerOutput.forwardSpeed = 0;
+//            controller->controllerOutput.rotationSpeed = 0;
+//            controller->controllerOutput.reached = 0;
 
             controller->regulateDynamic(bugAlg->getLidarData());
-        }
-        else
-        {
+//        }
+//        else
+//        {
             controller->regulate();
-        }
+//        }
     }
 
     if(datacounter%5)
