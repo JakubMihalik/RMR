@@ -146,8 +146,11 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
         double pointX = this->odData->posX + (point.scanDistance / 1000) * std::cos(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
         double pointY = this->odData->posY + (point.scanDistance / 1000) * std::sin(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
 
-        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
-        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+//        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+//        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+
+        double reqX = (pointX * std::cos(PI / 2) + pointY * std::sin(PI / 2));
+        double reqY = (-pointX * std::sin(PI / 2) + pointY * std::cos(PI / 2));
 
         // Add new checkpoint
         if (checkpoints.size() < 2)
