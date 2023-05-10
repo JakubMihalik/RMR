@@ -40,8 +40,8 @@ public:
     std::atomic<bool> fRotating;
     bool b_finishReached = false;
     ControllerOutput controllerOutput;
-    double distance = 0;
-    double angle = 0;
+    double m_distance = 0;
+    double m_angle = 0;
 
 /** Public methods **/
 public:

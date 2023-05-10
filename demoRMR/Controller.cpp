@@ -123,72 +123,141 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     LaserData point = {1, 0, DBL_MAX};
     for (int i{0}; i < lidar.numberOfScans; i++)
     {
-        if (lidar.Data[i].scanDistance > 130 && lidar.Data[i].scanDistance < 3000)
+        if (   (lidar.Data[i].scanDistance > 130 && lidar.Data[i].scanDistance < 3000)
+            && (lidar.Data[i].scanDistance < 640 || lidar.Data[i].scanDistance > 700))
         {
-//            if (lidar.Data[i].scanAngle <= 90 || lidar.Data[i].scanAngle >= 270)
-//            {
-                if (lidar.Data[i].scanDistance < point.scanDistance)
-                {
-                    point = lidar.Data[i];
-                }
-//            }
+            if (lidar.Data[i].scanDistance < point.scanDistance)
+            {
+                point = lidar.Data[i];
+                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
+            }
         }
     }
 
     if (point.scanDistance != DBL_MAX)
     {
-        double angleShift = (-90) + (point.scanDistance - ROBOT_DIAMETER_MM) / 5;
-        distance = point.scanDistance;
-        angle = point.scanAngle + angleShift;
-        angle = angle > 180 ? angle - 360 : angle < -180 ? angle + 360 : angle;
+        std::cout << "Found point: " << point.scanAngle << std::endl;
+        std::cout << "With distance: " << point.scanDistance << std::endl;
+        // Vypocitame poziciu najblizsieho bodu [mm]
+        double wallX = odData->posX + point.scanDistance * std::cos(degreesToRadians(odData->rotation + point.scanAngle));
+        double wallY = odData->posY + point.scanDistance * std::sin(degreesToRadians(odData->rotation + point.scanAngle));
 
-        // Transform angle 90 degree
-        double pointX = this->odData->posX + (point.scanDistance / 1000) * std::cos(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
-        double pointY = this->odData->posY + (point.scanDistance / 1000) * std::sin(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
+        // Vypocitame vektor k najblizsiemu bodu [mm]
+        Point vector = {wallX - odData->posX,
+                        wallY - odData->posY};
 
-        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
-        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+        // Otocime vektor o 90 stupnov [mm]
+        Point rotatedVector = {vector.x * std::cos(PI/2) + vector.y * std::sin(PI/2),
+                               vector.x * std::cos(PI/2) + vector.y * std::cos(PI/2)};
 
-//        double reqX = (pointX * std::cos(PI / 2) + pointY * std::sin(PI / 2));
-//        double reqY = (-pointX * std::sin(PI / 2) + pointY * std::cos(PI / 2));
+        // Vypocitame bod na sledovanie [mm]
+        double pointX = odData->posX + rotatedVector.x;
+        double pointY = odData->posY + rotatedVector.y;
 
-        // Add new checkpoint
-        if (checkpoints.size() < 2)
-        {
-            checkpoints.push_back({reqX, reqY});
-            std::cout << "Found point: " << point.scanAngle << "d " << point.scanDistance << "mm\n";
-            std::cout << "X, Y: " << pointX << "m " << pointY << "m\n";
-            std::cout << "Added [" << reqX << ", " << reqY << "]\n" << std::endl;
-        }
-        else if (checkpoints.size() > 1)
-        {
-            checkpoints.pop_back();
-            checkpoints.push_back({reqX, reqY});
-        }
+        // Vypocitame uhol a vzdialenost bodu kvoli vykreslovaniu
+        m_angle = radiansToDegrees(atan2(odData->posY - pointY, odData->posX - pointX));
+        m_distance = std::sqrt(std::pow(odData->posX - pointX, 2) + std::pow(odData->posY - pointY, 2));
+
+        // A prevedieme na metre
+        pointX /= 1000.0;
+        pointY /= 1000.0;
+
+        // Regulate
+        regulateWallFollow(pointX, pointY);
     }
 }
 
 void Controller::regulateWallFollow(double reqX, double reqY)
 {
-    ErrorValue error = calculateErrors();
-    // Check if position is achieved
-    if (abs(error.x) < 0.1 && abs(error.y) < 0.1)
-    {
-        if (checkpoints.size() > 1)
-        {
-            checkpoints.pop_back();
-        }
-    }
-    // Align angle
+    // Vypocitame chyby
+    ErrorValue ev;
+    double eX = abs(reqX - this->odData->posX);
+    double eY = abs(reqY - this->odData->posY);
 
-    if (abs(error.theta) > degreesToRadians(5.0))
+    // Calculate the difference between the current heading and the desired heading
+    double eTheta = atan2(reqY - this->odData->posY,
+                          reqX - this->odData->posX) - this->odData->rotation * PI / 180;
+    if (eTheta > PI) {
+        eTheta -= 2*PI;
+    } else if (eTheta < -PI) {
+        eTheta += 2*PI;
+    }
+    ev = {eX, eY, eTheta};
+
+    // Parametre regulacie
+    double distance = sqrt(pow(ev.x, 2) + pow(ev.y, 2));
+    double reqFwdSpeed = 500 * distance;
+    double reqRotSpeed = 5 * ev.theta;
+
+    double rotConst = PI / 32;
+    double fwdConst = 5;
+
+
+    // Je v v pozadovanom priestore
+    if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
     {
-        robot->setRotationSpeed(error.theta);
+        robot->setTranslationSpeed(0);
+        this->controllerOutput.forwardSpeed = 0;
+        this->controllerOutput.rotationSpeed = 0;
+        return;
+    }
+
+    if (reqFwdSpeed - controllerOutput.forwardSpeed > fwdConst)
+    {
+        controllerOutput.forwardSpeed += fwdConst;
     }
     else
     {
-        robot->setTranslationSpeed(150);
+        controllerOutput.forwardSpeed = reqFwdSpeed;
     }
+    controllerOutput.forwardSpeed = min(controllerOutput.forwardSpeed, 750);
+
+
+    if (controllerOutput.rotationSpeed - reqRotSpeed > rotConst)
+    {
+        controllerOutput.rotationSpeed -= rotConst;
+    }
+    else if (controllerOutput.rotationSpeed - reqRotSpeed < -rotConst)
+    {
+        controllerOutput.rotationSpeed += rotConst;
+    }
+    else
+    {
+        controllerOutput.rotationSpeed = reqRotSpeed;
+    }
+    controllerOutput.rotationSpeed = max(min(controllerOutput.rotationSpeed, PI / 2), -PI / 2);
+
+    double denom = controllerOutput.rotationSpeed != 0 ? controllerOutput.rotationSpeed : 0.1;
+    double radius = controllerOutput.forwardSpeed / denom;
+
+    // Set stop lidar flag
+    if(abs(controllerOutput.rotationSpeed) >= PI / 12)
+    {
+        this->fRotating = true;
+        this->fStopLidar = true;
+    }
+    else
+    {
+        this->fRotating = false;
+        this->fStopLidar = false;
+    }
+
+    if (reqRotSpeed / 5 > PI / 2)
+    {
+        robot->setRotationSpeed(PI / 6);
+    }
+    else
+    {
+        robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
+    }
+
+    // Vypis
+    std::cout << "Request: [" << reqX << ", " << reqY << "]" << std::endl;
+    std::cout << "Forward speed: " << controllerOutput.forwardSpeed << std::endl;
+    std::cout << "Radius: " << radius << std::endl;
+    std::cout << "Request rotation: " << reqRotSpeed / 5 << std::endl;
+    // Koniec
+    std::cout << std::endl;
 }
 
 void Controller::turnLeft(int speed, int radius)
