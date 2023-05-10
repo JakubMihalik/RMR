@@ -138,6 +138,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     {
         std::cout << "Found point: " << point.scanAngle << std::endl;
         std::cout << "With distance: " << point.scanDistance << std::endl;
+
         // Vypocitame poziciu najblizsieho bodu [mm]
         double wallX = odData->posX + point.scanDistance * std::cos(degreesToRadians(odData->rotation + point.scanAngle));
         double wallY = odData->posY + point.scanDistance * std::sin(degreesToRadians(odData->rotation + point.scanAngle));
