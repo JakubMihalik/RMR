@@ -129,7 +129,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
             if (lidar.Data[i].scanDistance < point.scanDistance)
             {
                 point = lidar.Data[i];
-                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
+//                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
             }
         }
     }
@@ -140,8 +140,8 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
         std::cout << "With distance: " << point.scanDistance << std::endl;
 
         // Vypocitame poziciu najblizsieho bodu [mm]
-        double wallX = odData->posX + point.scanDistance * std::cos(degreesToRadians(odData->rotation + point.scanAngle));
-        double wallY = odData->posY + point.scanDistance * std::sin(degreesToRadians(odData->rotation + point.scanAngle));
+        double wallX = odData->posX + (point.scanDistance - ROBOT_DIAMETER_MM) * std::cos(degreesToRadians(odData->rotation + point.scanAngle));
+        double wallY = odData->posY + (point.scanDistance - ROBOT_DIAMETER_MM) * std::sin(degreesToRadians(odData->rotation + point.scanAngle));
 
         // Vypocitame vektor k najblizsiemu bodu [mm]
         Point vector = {wallX - odData->posX,
@@ -195,13 +195,13 @@ void Controller::regulateWallFollow(double reqX, double reqY)
 
 
     // Je v v pozadovanom priestore
-    if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
-    {
-        robot->setTranslationSpeed(0);
-        this->controllerOutput.forwardSpeed = 0;
-        this->controllerOutput.rotationSpeed = 0;
-        return;
-    }
+//    if (abs(ev.x) < 0.03 && abs(ev.y) < 0.03)
+//    {
+//        robot->setTranslationSpeed(0);
+//        this->controllerOutput.forwardSpeed = 0;
+//        this->controllerOutput.rotationSpeed = 0;
+//        return;
+//    }
 
     if (reqFwdSpeed - controllerOutput.forwardSpeed > fwdConst)
     {
@@ -243,14 +243,14 @@ void Controller::regulateWallFollow(double reqX, double reqY)
         this->fStopLidar = false;
     }
 
-    if (reqRotSpeed / 5 > PI / 2)
-    {
-        robot->setRotationSpeed(PI / 6);
-    }
-    else
-    {
-        robot->setArcSpeed(controllerOutput.forwardSpeed, radius);
-    }
+//    if (reqRotSpeed / 5 > PI / 2)
+//    {
+//        robot->setRotationSpeed(PI / 6);
+//    }
+//    else
+//    {
+        robot->setArcSpeed(controllerOutput.forwardSpeed, max(min(radius, INT_MAX), -INT_MAX));
+//    }
 
     // Vypis
     std::cout << "Request: [" << reqX << ", " << reqY << "]" << std::endl;

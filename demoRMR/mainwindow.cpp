@@ -93,6 +93,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     pero.setColor(Qt::white);
     painter.setPen(pero);
     painter.drawEllipse(QPoint(rect.topLeft().x()+rect.width()/2, rect.topLeft().y()+rect.height()/2),2,2);
+
     // Point draw
     int xp=rect.width()-(rect.width()/2+controller->m_distance/10*sin((360.0-controller->m_angle)*PI/180.0))+rect.topLeft().x(); //prepocet do obrazovky
     int yp=rect.height()-(rect.height()/2+controller->m_distance/10*cos((360.0-controller->m_angle)*PI/180.0))+rect.topLeft().y();//prepocet do obrazovky
