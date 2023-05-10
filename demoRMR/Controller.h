@@ -52,6 +52,7 @@ public:
     void turnLeft(int speed, int radius);
     void turnRight(int speed, int radius);
     void moveForward(int speed);
+    void regulateWallFollow();
 
 };
 

@@ -131,7 +131,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 //        }
 //        else
 //        {
-            controller->regulate();
+//            controller->regulate();
+            controller->regulateWallFollow();
 //        }
     }
 

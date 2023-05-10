@@ -163,6 +163,33 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     }
 }
 
+void Controller::regulateWallFollow()
+{
+    ErrorValue error = calculateErrors();
+    // Check if position is achieved
+    if (abs(error.x) < 0.1 && abs(error.y) < 0.1)
+    {
+        if (checkpoints.size() > 1)
+        {
+            checkpoints.pop_back();
+        }
+//        else
+//        {
+//            b_finishReached = true;
+//        }
+    }
+    // Align angle
+
+    if (abs(error.theta) > degreesToRadians(5.0))
+    {
+        robot->setRotationSpeed(error.theta);
+    }
+    else
+    {
+        robot->setTranslationSpeed(150);
+    }
+}
+
 void Controller::turnLeft(int speed, int radius)
 {
     robot->setArcSpeed(speed, radius);
