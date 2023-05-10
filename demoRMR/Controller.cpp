@@ -119,8 +119,6 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
      *  Zatacanie do prava (od steny pre pravy senzor)(+) kladna hodnota
     **/
 
-    const static double desiredDistance = ROBOT_DIAMETER_MM * 5;
-
     // Find closest point
     LaserData point = {1, 0, DBL_MAX};
     for (int i{0}; i < lidar.numberOfScans; i++)
@@ -131,7 +129,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
             if (lidar.Data[i].scanDistance < point.scanDistance)
             {
                 point = lidar.Data[i];
-//                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
+                point.scanAngle = 360.0 - point.scanAngle; // Lidar je opacne tocivy ako robot
 
                 // Upravime uhol na rozsah -180 az 180
 //                if (point.scanAngle > 180)
@@ -144,6 +142,8 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
 
     if (point.scanDistance != DBL_MAX)
     {
+        /*const static*/ double desiredDistance = point.scanDistance + ROBOT_DIAMETER_MM;
+
         std::cout << "Found point: " << point.scanAngle << std::endl;
         std::cout << "With distance: " << point.scanDistance << std::endl;
 
