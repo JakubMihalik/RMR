@@ -138,19 +138,19 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
     if (point.scanDistance != DBL_MAX)
     {
         double angleShift = (-90) + (point.scanDistance - ROBOT_DIAMETER_MM) / 5;
-        double distance = point.scanDistance > 600 ? point.scanDistance : 600;
-        double angle = point.scanAngle + angleShift;
+        distance = point.scanDistance;
+        angle = point.scanAngle + angleShift;
         angle = angle > 180 ? angle - 360 : angle < -180 ? angle + 360 : angle;
 
         // Transform angle 90 degree
         double pointX = this->odData->posX + (point.scanDistance / 1000) * std::cos(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
         double pointY = this->odData->posY + (point.scanDistance / 1000) * std::sin(degreesToRadians(this->odData->rotation + (360 - point.scanAngle)));
 
-//        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
-//        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+        double reqX = (distance * std::cos(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
+        double reqY = (distance * std::sin(degreesToRadians(this->odData->rotation + (360 - angle)))) / 1000.0;
 
-        double reqX = (pointX * std::cos(PI / 2) + pointY * std::sin(PI / 2));
-        double reqY = (-pointX * std::sin(PI / 2) + pointY * std::cos(PI / 2));
+//        double reqX = (pointX * std::cos(PI / 2) + pointY * std::sin(PI / 2));
+//        double reqY = (-pointX * std::sin(PI / 2) + pointY * std::cos(PI / 2));
 
         // Add new checkpoint
         if (checkpoints.size() < 2)
@@ -160,10 +160,15 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
             std::cout << "X, Y: " << pointX << "m " << pointY << "m\n";
             std::cout << "Added [" << reqX << ", " << reqY << "]\n" << std::endl;
         }
+        else if (checkpoints.size() > 1)
+        {
+            checkpoints.pop_back();
+            checkpoints.push_back({reqX, reqY});
+        }
     }
 }
 
-void Controller::regulateWallFollow()
+void Controller::regulateWallFollow(double reqX, double reqY)
 {
     ErrorValue error = calculateErrors();
     // Check if position is achieved
@@ -173,10 +178,6 @@ void Controller::regulateWallFollow()
         {
             checkpoints.pop_back();
         }
-//        else
-//        {
-//            b_finishReached = true;
-//        }
     }
     // Align angle
 

@@ -40,6 +40,8 @@ public:
     std::atomic<bool> fRotating;
     bool b_finishReached = false;
     ControllerOutput controllerOutput;
+    double distance = 0;
+    double angle = 0;
 
 /** Public methods **/
 public:
@@ -52,7 +54,7 @@ public:
     void turnLeft(int speed, int radius);
     void turnRight(int speed, int radius);
     void moveForward(int speed);
-    void regulateWallFollow();
+    void regulateWallFollow(double reqX, double reqY);
 
 };
 

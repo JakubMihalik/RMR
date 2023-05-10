@@ -89,6 +89,16 @@ void MainWindow::paintEvent(QPaintEvent *event)
             }
         }
     }
+    // Robot draw
+    pero.setColor(Qt::white);
+    painter.setPen(pero);
+    painter.drawEllipse(QPoint(rect.topLeft().x()+rect.width()/2, rect.topLeft().y()+rect.height()/2),2,2);
+    // Point draw
+    int xp=rect.width()-(rect.width()/2+controller->distance/10*sin((360.0-controller->angle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
+    int yp=rect.height()-(rect.height()/2+controller->distance/10*cos((360.0-controller->angle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
+    pero.setColor(Qt::red);
+    painter.setPen(pero);
+    painter.drawEllipse(QPoint(xp, yp),2,2);
 }
 
 void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
