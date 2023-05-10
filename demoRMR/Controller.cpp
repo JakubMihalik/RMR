@@ -148,7 +148,7 @@ void Controller::regulateDynamic(LaserMeasurement lidar)
                         wallY - odData->posY};
 
         // Otocime vektor o 90 stupnov [mm]
-        Point rotatedVector = {vector.x * std::cos(PI/2) + vector.y * std::sin(PI/2),
+        Point rotatedVector = {vector.x * std::cos(PI/2) - vector.y * std::sin(PI/2),
                                vector.x * std::cos(PI/2) + vector.y * std::cos(PI/2)};
 
         // Vypocitame bod na sledovanie [mm]
