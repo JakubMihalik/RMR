@@ -40,8 +40,12 @@ public:
     std::atomic<bool> fRotating;
     bool b_finishReached = false;
     ControllerOutput controllerOutput;
+    ControllerOutput currentState;
     double m_distance = 0;
     double m_angle = 0;
+    double hit_point_x;
+    double hit_point_y;
+    enum BugState { GO_TO_TARGET, OBSTACLE_AVOIDANCE } bug_state = GO_TO_TARGET;
 
 /** Public methods **/
 public:
@@ -56,6 +60,9 @@ public:
     void moveForward(int speed);
     void regulateWallFollow(double reqX, double reqY);
 
+    std::pair<double, double> control_step(LaserMeasurement lidar);
+    void controll(std::pair<double, double> control_commands);
+    void regulation(double distance, double theta);
 };
 
 #endif // CONTROLLER_H

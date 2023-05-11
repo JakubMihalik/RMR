@@ -138,7 +138,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 //            controller->controllerOutput.rotationSpeed = 0;
 //            controller->controllerOutput.reached = 0;
 
-            controller->regulateDynamic(bugAlg->getLidarData());
+//            controller->regulateDynamic(bugAlg->getLidarData());
+        std::pair<double, double> control_commands = controller->control_step(bugAlg->getLidarData());
+
+        controller->controll(control_commands);
 //        }
 //        else
 //        {
