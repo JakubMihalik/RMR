@@ -259,15 +259,6 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
         // scanAngle is in [360 - 0] exact opposite to robots rotating angle [0 - 360]
         double desired_angle = deg2rad(point.scanAngle);
 
-        // Calculate the difference between the current heading and the desired heading
-//        double eTheta = atan2(this->checkpoints.back().y - this->odData->posY,
-//                              this->checkpoints.back().x - this->odData->posX) - this->odData->rotation * PI / 180;
-//        if (eTheta > PI) {
-//            eTheta -= 2*PI;
-//        } else if (eTheta < -PI) {
-//            eTheta += 2*PI;
-//        }
-
         if (desired_angle > PI) {
             desired_angle -= 2 * PI;
         }
@@ -275,15 +266,16 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
 
         std::cout << "Desired angle: " << desired_angle << "\n";
 
-        double angular_speed = PI/2 * (desired_angle);
-        double linear_speed = 500 * 0.5;
+        double angular_speed = 5 * (desired_angle);
+        double linear_speed = max(0.1, min(1.0, point.scanDistance / 1000.0)) * 500;
 
         std::cout << "Linear speed: " << linear_speed << " Angular speed: " << angular_speed << "\n";
 
         // Check if the robot has reached the hit point and switch back to GO_TO_TARGET state
         double distance_to_hit_point = std::sqrt(std::pow(hit_point_x - odData->posX, 2) + std::pow(hit_point_y - odData->posY, 2));
+        std::cout << "Distance to hitpoint: " << distance_to_hit_point << "\n";
 
-        if (distance_to_hit_point < 0.05) {  // 50 mm tolerance
+        if (distance_to_hit_point < 0.5) {  // 50 mm tolerance
             // Check if the path to the target is clear
             double required_heading = std::atan2(this->checkpoints.back().y - odData->posY, this->checkpoints.back().x - odData->posX);
             required_heading = required_heading * 180 / PI;
@@ -292,12 +284,15 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
             bool path_clear = true;
             for (int i{0}; i < lidar.numberOfScans; i++)
             {
-                if (   (lidar.Data[i].scanDistance > 130 && lidar.Data[i].scanDistance < 3000)
-                    && (lidar.Data[i].scanDistance < 640 || lidar.Data[i].scanDistance > 700)
-                    && std::abs(required_heading - lidar.Data[i].scanAngle) < 5)  // 5 degree tolerance
+                if (lidar.Data[i].scanDistance < 1000)
                 {
-                    path_clear = false;
-                    break;
+                    double angle_diff = std::abs(lidar.Data[i].scanAngle - required_heading);
+                    angle_diff = min(angle_diff, 360 - angle_diff);  // Take into account wrap-around from 360 to 0
+                    if (angle_diff < 30)
+                    {
+                        path_clear = false;
+                        break;
+                    }
                 }
             }
 
@@ -325,7 +320,7 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
        double heading_error = required_heading - deg2rad(odData->rotation);
        heading_error = std::atan2(std::sin(heading_error), std::cos(heading_error));  // Normalize the angle to be between -pi and pi
 
-//       regulation(distance_to_target, heading_error);
+       regulation(distance_to_target, heading_error);
        // Calculate the control commands
        double linear_speed = 50*distance_to_target;
        double angular_speed = PI * heading_error;
@@ -337,11 +332,11 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
 }
 
 void Controller::controll(std::pair<double, double> control_commands) {
-//    if (abs(control_commands.second) > 0.05)
-//    {
-//        robot->setRotationSpeed(control_commands.second);
-//        return;
-//    }
+    if (abs(control_commands.second) > 0.1)
+    {
+        robot->setRotationSpeed(control_commands.second);
+        return;
+    }
     robot->setArcSpeed(control_commands.first, control_commands.first/control_commands.second);
 }
 
@@ -411,17 +406,17 @@ void Controller::regulation(double distance, double theta) {
 
 ////    {
 
-//    if (abs(theta) > PI/4) {
-//        controllerOutput.forwardSpeed = 0;
-//        robot->setRotationSpeed(controllerOutput.rotationSpeed);
-//        return;
-//    }
+    if (abs(theta) > 0.05) {
+        controllerOutput.forwardSpeed = 0;
+        robot->setRotationSpeed(controllerOutput.rotationSpeed);
+        return;
+    }
 
-//    if (controllerOutput.rotationSpeed == 0) {
-//        robot->setTranslationSpeed(controllerOutput.forwardSpeed);
-//    } else {
+    if (controllerOutput.rotationSpeed == 0) {
+        robot->setTranslationSpeed(controllerOutput.forwardSpeed);
+    } else {
         robot->setArcSpeed(controllerOutput.forwardSpeed, controllerOutput.forwardSpeed/controllerOutput.rotationSpeed);
-//    }
+    }
 }
 
 
@@ -509,7 +504,7 @@ void Controller::regulateWallFollow(double reqX, double reqY)
 
 //    {
 
-    if (abs(ev.theta) > PI/4) {
+    if (abs(ev.theta) > 0.05) {
         controllerOutput.forwardSpeed = 0;
         robot->setRotationSpeed(controllerOutput.rotationSpeed);
         return;
