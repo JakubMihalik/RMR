@@ -33,7 +33,9 @@ private:
     double desiredX;
     double desiredY;
     LaserMeasurement laser;
-
+    int turn_direction = 0;  // -1 for left, 1 for right
+    double prev_distance_to_target;
+    double prev_obstacle_distance;
 public:
     std::vector<Point> checkpoints;
     std::atomic<bool> fStopLidar;
@@ -63,6 +65,9 @@ public:
     std::pair<double, double> control_step(LaserMeasurement lidar);
     void controll(std::pair<double, double> control_commands);
     void regulation(double distance, double theta);
+
+    void obstacleAvoidance(LaserMeasurement laserData);
+    bool pathToGoalIsFree(LaserMeasurement lidar);
 };
 
 #endif // CONTROLLER_H

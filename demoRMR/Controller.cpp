@@ -254,52 +254,73 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
            }
         }
 
-        std::cout << "Closest obstacle at: Distance: " << point.scanDistance << " Angle: " << point.scanAngle << "\n";
-
-        // scanAngle is in [360 - 0] exact opposite to robots rotating angle [0 - 360]
         double desired_angle = deg2rad(point.scanAngle);
+        double target_angle = std::atan2(this->checkpoints.back().y - odData->posY, this->checkpoints.back().x - odData->posX);
+
+        if (turn_direction == 0)
+        {
+            double obstacle_x = point.scanDistance * cos(deg2rad(point.scanAngle));
+            double obstacle_y = point.scanDistance * sin(deg2rad(point.scanAngle));
+
+//            std::cout << "Closest obstacle at: Distance: " << point.scanDistance << " Angle: " << point.scanAngle << "\n";
+
+            // scanAngle is in [360 - 0] exact opposite to robots rotating angle [0 - 360]
+            double obstacle_angle = std::atan2(obstacle_y - odData->posY, obstacle_x - odData->posX);
+
+            // Compute the difference and normalize to the range [-PI, PI]
+            double angle_diff2 = obstacle_angle - target_angle;
+            angle_diff2 = atan2(sin(angle_diff2), cos(angle_diff2));
+
+            // Determine the direction to turn
+            if (angle_diff2 < 0) {
+                // Obstacle is to the left of the target, turn right
+                turn_direction = +1;
+            } else {
+                // Obstacle is to the right of the target, turn left
+                turn_direction = -1;
+            }
+        }
+
+        desired_angle += turn_direction * PI / 2;
 
         if (desired_angle > PI) {
             desired_angle -= 2 * PI;
         }
-        desired_angle += PI / 2;
 
-        std::cout << "Desired angle: " << desired_angle << "\n";
 
         double angular_speed = 5 * (desired_angle);
-        double linear_speed = max(0.1, min(1.0, point.scanDistance / 1000.0)) * 500;
+        double linear_speed = max(0, min(1.0, point.scanDistance / 1000.0)) * 750;
 
+        std::cout << "Desired angle: " << desired_angle << "\n";
         std::cout << "Linear speed: " << linear_speed << " Angular speed: " << angular_speed << "\n";
 
-        // Check if the robot has reached the hit point and switch back to GO_TO_TARGET state
-        double distance_to_hit_point = std::sqrt(std::pow(hit_point_x - odData->posX, 2) + std::pow(hit_point_y - odData->posY, 2));
-        std::cout << "Distance to hitpoint: " << distance_to_hit_point << "\n";
-
-        if (distance_to_hit_point < 0.5) {  // 50 mm tolerance
-            // Check if the path to the target is clear
-            double required_heading = std::atan2(this->checkpoints.back().y - odData->posY, this->checkpoints.back().x - odData->posX);
-            required_heading = required_heading * 180 / PI;
-            if (required_heading < 0) required_heading += 360;
-
-            bool path_clear = true;
-            for (int i{0}; i < lidar.numberOfScans; i++)
-            {
-                if (lidar.Data[i].scanDistance < 1000)
-                {
-                    double angle_diff = std::abs(lidar.Data[i].scanAngle - required_heading);
-                    angle_diff = min(angle_diff, 360 - angle_diff);  // Take into account wrap-around from 360 to 0
-                    if (angle_diff < 30)
-                    {
-                        path_clear = false;
-                        break;
-                    }
-                }
-            }
-
-            if (path_clear) bug_state = GO_TO_TARGET;
+        if (pathToGoalIsFree(lidar)) {
+            bug_state = GO_TO_TARGET;
         }
 
-//        regulation(distance_to_hit_point, desired_angle);
+        // Calculate the angle between the vector from the robot to the target and the vector from the robot to the hit point
+//        double hit_point_angle = std::atan2(hit_point_y - odData->posY, hit_point_x - odData->posX);
+
+//        double angle_diff = target_angle - hit_point_angle;
+//        angle_diff = std::fmod(angle_diff, 2 * PI);
+
+
+//        double distance_to_target = std::sqrt(std::pow(this->checkpoints.back().x - odData->posX, 2) + std::pow(this->checkpoints.back().y - odData->posY, 2));
+
+//        // Check if the path to the target is clear (Line of Sight)
+//        double required_heading = std::atan2(this->checkpoints.back().y - odData->posY, this->checkpoints.back().x - odData->posX);
+//        required_heading = required_heading * 180 / PI;
+//        if (required_heading < 0) required_heading += 360;
+
+
+
+        // Check if we can leave the obstacle
+//        if (angle_diff > PI && pathToGoalIsFree(lidar)) {
+//            // The path to the goal is clear and the robot has moved around the obstacle,
+//            // so it can leave the obstacle and start moving towards the goal again.
+//            bug_state = GO_TO_TARGET;
+//        }
+
         output = {linear_speed, angular_speed};
     }
 
@@ -322,7 +343,7 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
 
        regulation(distance_to_target, heading_error);
        // Calculate the control commands
-       double linear_speed = 50*distance_to_target;
+       double linear_speed = 100 * distance_to_target;
        double angular_speed = PI * heading_error;
 
        output = {linear_speed, angular_speed};
@@ -331,12 +352,62 @@ std::pair<double, double> Controller::control_step(LaserMeasurement lidar) {
    return output;
 }
 
-void Controller::controll(std::pair<double, double> control_commands) {
-    if (abs(control_commands.second) > 0.1)
-    {
-        robot->setRotationSpeed(control_commands.second);
-        return;
+bool Controller::pathToGoalIsFree(LaserMeasurement lidar)
+{
+    // Calculate the required heading to the target
+    double heading_to_target = std::atan2(this->checkpoints.back().y - odData->posY, this->checkpoints.back().x - odData->posX);
+    double distance_to_target = std::sqrt(std::pow(this->checkpoints.back().x - odData->posX, 2) + std::pow(this->checkpoints.back().y - odData->posY, 2));
+
+    // Convert to degrees
+    heading_to_target = heading_to_target * 180 / PI;
+
+    if (heading_to_target < 0) heading_to_target += 360;
+
+    double heading_range = 3.0;
+    for (int i = 0; i < lidar.numberOfScans; i++) {
+        if (   (lidar.Data[i].scanDistance > 130 && lidar.Data[i].scanDistance < 3000)
+            && (lidar.Data[i].scanDistance < 640 || lidar.Data[i].scanDistance > 700))
+        {
+            // Pozicia scanu
+            double scanAngle = 360 - lidar.Data[i].scanAngle;
+            double laserX = odData->posX + (lidar.Data[i].scanDistance / 1000) * cos(scanAngle * PI / 180);
+            double laserY = odData->posY + (lidar.Data[i].scanDistance / 1000) * sin(scanAngle * PI / 180);
+
+            if (this->checkpoints.back().x + 0.1 < laserX &&
+                this->checkpoints.back().x - 0.1 > laserX &&
+                this->checkpoints.back().y + 0.1 < laserY &&
+                this->checkpoints.back().y - 0.1 > laserY) {
+                return true;
+            }
+
+        }
     }
+    return false;
+}
+
+void Controller::obstacleAvoidance(LaserMeasurement laserData)
+{
+    // detect edges
+    std::vector<int> edge_indices;
+    double threshold = 0.1 * 1000;
+
+    for (int i = 1; i < laserData.numberOfScans; i++) {
+        double diff = abs(laserData.Data[i].scanDistance - laserData.Data[i-1].scanDistance);
+        if (diff > threshold) {
+            edge_indices.push_back(i);
+        }
+    }
+}
+
+void Controller::controll(std::pair<double, double> control_commands) {
+
+//    if (abs(control_commands.second) > deg2rad(10))
+//    {
+//        robot->setRotationSpeed(control_commands.second);
+//        return;
+//    }
+//    robot->setTranslationSpeed(control_commands.first);
+
     robot->setArcSpeed(control_commands.first, control_commands.first/control_commands.second);
 }
 
